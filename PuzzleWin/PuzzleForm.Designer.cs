@@ -1,6 +1,6 @@
 ﻿namespace PuzzleWin
 {
-    partial class Form1
+    partial class PuzzleForm
     {
         /// <summary>
         ///  Required designer variable.
@@ -67,11 +67,11 @@
             this.Controls.Add(this.label1);
             this.Name = "Form1";
             this.Text = "Puzzle";
-            this.Load += new System.EventHandler(this.Form1_Load);
-            this.Paint += new System.Windows.Forms.PaintEventHandler(this.Form1_Paint);
-            this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Form1_MouseDown);
-            this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Form1_MouseMove);
-            this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.Form1_MouseUp);
+            this.Load += new System.EventHandler(this.PuzzleForm_Load);
+            this.Paint += new System.Windows.Forms.PaintEventHandler(this.PuzzleForm_Paint);
+            this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PuzzleForm_MouseDown);
+            this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PuzzleForm_MouseMove);
+            this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.PuzzleForm_MouseUp);
             this.ResumeLayout(false);
             this.PerformLayout();
 

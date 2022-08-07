@@ -3,7 +3,7 @@ using System.Drawing.Drawing2D;
 
 namespace PuzzleWin
 {
-    public partial class Form1 : Form
+    public partial class PuzzleForm : Form
     {
         Image IMG;
         Bitmap BMP;
@@ -13,6 +13,7 @@ namespace PuzzleWin
         SizeW SIZE = new SizeW();
         double SCALER = 0.8;
         List<Piece> PIECES = new List<Piece>();
+        Dictionary<Color, Piece> COLORDIC = new Dictionary<Color, Piece>();
         bool PIECE_SELECTED = false;
         Piece SELECTED_PIECE;
         Stopwatch SW = new Stopwatch();
@@ -340,7 +341,7 @@ namespace PuzzleWin
             }
         }
 
-        public Form1(string name)
+        public PuzzleForm(string name)
         {
             InitializeComponent();
             FN = name;
@@ -349,7 +350,7 @@ namespace PuzzleWin
             DoubleBuffered = true;
             SW.Start();
         }
-        private void Form1_Paint(object sender, PaintEventArgs e)
+        private void PuzzleForm_Paint(object sender, PaintEventArgs e)
         {
             BMP = new Bitmap(this.Width, this.Height);
             CANVAS = e.Graphics;
@@ -371,8 +372,8 @@ namespace PuzzleWin
             TRANSCAN.FillRectangle(opq, rect);
             TRANSCAN.DrawRectangle(new Pen(Color.Black), (int)SIZE.X - 1, (int)SIZE.Y - 1, (int)SIZE.Width + 2, (int)SIZE.Height + 2);
 
-            SIZE.Rows = 2;
-            SIZE.Columns = 2;
+            SIZE.Rows = 8;
+            SIZE.Columns = 6;
             
             updateCanvas();
 
@@ -382,7 +383,7 @@ namespace PuzzleWin
                 CANVAS.DrawImage(IMG, (int)SIZE.X, (int)SIZE.Y, (int)SIZE.Width, (int)SIZE.Height);
             }
         }
-        private void Form1_Load(object sender, EventArgs e)
+        private void PuzzleForm_Load(object sender, EventArgs e)
         {
         }
         public static double distance(Coord p1, Coord p2)
@@ -433,6 +434,7 @@ namespace PuzzleWin
                 for (int j = 0; j < SIZE.Columns; j++)
                 {
                     Piece piece = PIECES[count];
+                    COLORDIC.Add(PIECES[count].color, PIECES[count]);
                     if (i == SIZE.Rows - 1)
                         piece.Bottom = double.NaN;
                     else
@@ -496,7 +498,7 @@ namespace PuzzleWin
                 PIECES[i].isCorrect = false;
             }
         }
-        private void Form1_MouseDown(object sender, MouseEventArgs e)
+        private void PuzzleForm_MouseDown(object sender, MouseEventArgs e)
         {
             Color clicked = BMP.GetPixel(e.X, e.Y);
             if (clicked.A == 0)
@@ -506,7 +508,7 @@ namespace PuzzleWin
             }
             else
             {
-                SELECTED_PIECE = PIECES.Find(i => i.color == clicked);
+                SELECTED_PIECE = COLORDIC[clicked];
                 if (!SELECTED_PIECE.Moveable)
                 {
                     SELECTED_PIECE = null;
@@ -515,22 +517,16 @@ namespace PuzzleWin
                 else
                 {
                     PIECE_SELECTED = true;
-
-                    if (SELECTED_PIECE != null)
-                    {
-                        int i = PIECES.IndexOf(SELECTED_PIECE);
-                        if (i != -1)
-                        {
-                            PIECES.Remove(SELECTED_PIECE);
-                            PIECES.Add(SELECTED_PIECE);
-                        }
-                        SELECTED_PIECE.OffsetX = e.X - SELECTED_PIECE.X;
-                        SELECTED_PIECE.OffsetY = e.Y - SELECTED_PIECE.Y;
-                    }
+                    int i = PIECES.IndexOf(SELECTED_PIECE);
+                    PIECES.Remove(SELECTED_PIECE);
+                    PIECES.Add(SELECTED_PIECE);
+                    SELECTED_PIECE.OffsetX = e.X - SELECTED_PIECE.X;
+                    SELECTED_PIECE.OffsetY = e.Y - SELECTED_PIECE.Y;
                 }
             }
+            this.Invalidate();
         }
-        private void Form1_MouseUp(object sender, MouseEventArgs e)
+        private void PuzzleForm_MouseUp(object sender, MouseEventArgs e)
         {
             if (SELECTED_PIECE != null && SELECTED_PIECE.close())
             {
@@ -550,7 +546,7 @@ namespace PuzzleWin
             SELECTED_PIECE = null;
             PIECE_SELECTED = false;
         }
-        private void Form1_MouseMove(object sender, MouseEventArgs e)
+        private void PuzzleForm_MouseMove(object sender, MouseEventArgs e)
         {
             if(PIECE_SELECTED)
             {
@@ -558,11 +554,6 @@ namespace PuzzleWin
                 SELECTED_PIECE.Y = e.Y - SELECTED_PIECE.OffsetY;
                 this.Invalidate();
             }
-        }
-
-        private void flowLayoutPanel1_Paint(object sender, PaintEventArgs e)
-        {
-
         }
     }
 }

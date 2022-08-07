@@ -10,19 +10,19 @@ using System.Windows.Forms;
 
 namespace PuzzleWin
 {
-    public partial class Form2 : Form
+    public partial class StartForm : Form
     {
         string FN;
-        public Form2()
+        public StartForm()
         {
             InitializeComponent();
         }
-        private void Form2_Load(object sender, EventArgs e)
+        private void StartForm_Load(object sender, EventArgs e)
         {
         }
         private void btnStart_Click(object sender, EventArgs e)
         {
-            Form1 form1 = new Form1(FN);
+            PuzzleForm form1 = new PuzzleForm(FN);
             this.Hide();
             form1.Show();
         }
