@@ -22,14 +22,21 @@ namespace PuzzleWin
         }
         private void btnStart_Click(object sender, EventArgs e)
         {
-            PuzzleForm form1 = new PuzzleForm(FN);
-            this.Hide();
-            form1.Show();
+            if(FN != null)
+            {
+                PuzzleForm form1 = new PuzzleForm(FN);
+                this.Hide();
+                form1.Show();
+            }
         }
         private void btnLoad_Click(object sender, EventArgs e)
         {
             openFileDialog1.ShowDialog();
             FN = openFileDialog1.FileName;
+            if (FN != "")
+               btnStart.Enabled = true;
+            else
+                btnStart.Enabled = false;
         }
     }
 }
