@@ -28,8 +28,14 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PuzzleForm));
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
+            this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.menuPause = new System.Windows.Forms.ToolStripMenuItem();
+            this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
+            this.contextMenuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -57,21 +63,44 @@
             this.label2.Text = "label2";
             this.label2.Visible = false;
             // 
-            // Form1
+            // contextMenuStrip
+            // 
+            this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuPause});
+            this.contextMenuStrip.Name = "contextMenuStrip";
+            this.contextMenuStrip.Size = new System.Drawing.Size(106, 26);
+            // 
+            // menuPause
+            // 
+            this.menuPause.Name = "menuPause";
+            this.menuPause.Size = new System.Drawing.Size(105, 22);
+            this.menuPause.Text = "Pause";
+            this.menuPause.Click += new System.EventHandler(this.Pause_OnClick);
+            // 
+            // notifyIcon
+            // 
+            this.notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
+            this.notifyIcon.Tag = "";
+            this.notifyIcon.Text = "Resume Puzzle";
+            this.notifyIcon.DoubleClick += new System.EventHandler(this.notifyIcon_DoubleClick);
+            // 
+            // PuzzleForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlDark;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ContextMenuStrip = this.contextMenuStrip;
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
-            this.Name = "Form1";
+            this.Name = "PuzzleForm";
             this.Text = "Puzzle";
             this.Load += new System.EventHandler(this.PuzzleForm_Load);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.PuzzleForm_Paint);
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PuzzleForm_MouseDown);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PuzzleForm_MouseMove);
             this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.PuzzleForm_MouseUp);
+            this.contextMenuStrip.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -81,5 +110,8 @@
 
         private Label label1;
         private Label label2;
+        private ContextMenuStrip contextMenuStrip;
+        private ToolStripMenuItem menuPause;
+        private NotifyIcon notifyIcon;
     }
 }

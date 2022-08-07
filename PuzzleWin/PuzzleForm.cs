@@ -372,8 +372,8 @@ namespace PuzzleWin
             TRANSCAN.FillRectangle(opq, rect);
             TRANSCAN.DrawRectangle(new Pen(Color.Black), (int)SIZE.X - 1, (int)SIZE.Y - 1, (int)SIZE.Width + 2, (int)SIZE.Height + 2);
 
-            SIZE.Rows = 8;
-            SIZE.Columns = 6;
+            SIZE.Rows = 2;
+            SIZE.Columns = 2;
             
             updateCanvas();
 
@@ -554,6 +554,20 @@ namespace PuzzleWin
                 SELECTED_PIECE.Y = e.Y - SELECTED_PIECE.OffsetY;
                 this.Invalidate();
             }
+        }
+
+        private void Pause_OnClick(object sender, EventArgs e)
+        {
+            SW.Stop();
+            this.Hide();
+            notifyIcon.Visible = true;
+        }
+
+        private void notifyIcon_DoubleClick(object sender, EventArgs e)
+        {
+            this.Show();
+            notifyIcon.Visible = false;
+            SW.Start();
         }
     }
 }
