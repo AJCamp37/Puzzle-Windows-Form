@@ -35,6 +35,7 @@
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.menuPause = new System.Windows.Forms.ToolStripMenuItem();
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
+            this.menuShowPic = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -66,14 +67,15 @@
             // contextMenuStrip
             // 
             this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuPause});
+            this.menuPause,
+            this.menuShowPic});
             this.contextMenuStrip.Name = "contextMenuStrip";
-            this.contextMenuStrip.Size = new System.Drawing.Size(106, 26);
+            this.contextMenuStrip.Size = new System.Drawing.Size(144, 48);
             // 
             // menuPause
             // 
             this.menuPause.Name = "menuPause";
-            this.menuPause.Size = new System.Drawing.Size(105, 22);
+            this.menuPause.Size = new System.Drawing.Size(143, 22);
             this.menuPause.Text = "Pause";
             this.menuPause.Click += new System.EventHandler(this.Pause_OnClick);
             // 
@@ -83,6 +85,13 @@
             this.notifyIcon.Tag = "";
             this.notifyIcon.Text = "Resume Puzzle";
             this.notifyIcon.DoubleClick += new System.EventHandler(this.notifyIcon_DoubleClick);
+            // 
+            // menuShowPic
+            // 
+            this.menuShowPic.Name = "menuShowPic";
+            this.menuShowPic.Size = new System.Drawing.Size(143, 22);
+            this.menuShowPic.Text = "Show Picture";
+            this.menuShowPic.Click += new System.EventHandler(this.ShowPic_OnClick);
             // 
             // PuzzleForm
             // 
@@ -113,5 +122,6 @@
         private ContextMenuStrip contextMenuStrip;
         private ToolStripMenuItem menuPause;
         private NotifyIcon notifyIcon;
+        private ToolStripMenuItem menuShowPic;
     }
 }

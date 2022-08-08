@@ -18,6 +18,7 @@ namespace PuzzleWin
         Piece SELECTED_PIECE;
         Stopwatch SW = new Stopwatch();
         string FN;
+        bool BG = false;
         
         public class SizeW
         {
@@ -366,14 +367,19 @@ namespace PuzzleWin
             SIZE.X = (double)this.Width / 2 - (double)SIZE.Width / 2;
             SIZE.Y = (double)this.Height / 2 - (double)SIZE.Height / 2;
 
-            TRANSCAN.DrawImage(IMG, (int)SIZE.X, (int)SIZE.Y, (int)SIZE.Width, (int)SIZE.Height);
-            Brush opq = new SolidBrush(Color.FromArgb(150, 255, 255, 255));
             Rectangle rect = new Rectangle((int)SIZE.X, (int)SIZE.Y, (int)SIZE.Width, (int)SIZE.Height);
-            TRANSCAN.FillRectangle(opq, rect);
+            if (BG)
+            {
+                TRANSCAN.DrawImage(IMG, (int)SIZE.X, (int)SIZE.Y, (int)SIZE.Width, (int)SIZE.Height);
+                Brush opq = new SolidBrush(Color.FromArgb(150, 255, 255, 255));
+                TRANSCAN.FillRectangle(opq, rect);
+            }
+            else
+                TRANSCAN.FillRectangle(new SolidBrush(Color.White), rect);
             TRANSCAN.DrawRectangle(new Pen(Color.Black), (int)SIZE.X - 1, (int)SIZE.Y - 1, (int)SIZE.Width + 2, (int)SIZE.Height + 2);
 
-            SIZE.Rows = 2;
-            SIZE.Columns = 2;
+            SIZE.Rows = 6;
+            SIZE.Columns = 4;
             
             updateCanvas();
 
@@ -550,6 +556,7 @@ namespace PuzzleWin
         {
             if(PIECE_SELECTED)
             {
+                //if you wanna move multiple pieces at once do it here
                 SELECTED_PIECE.X = e.X - SELECTED_PIECE.OffsetX;
                 SELECTED_PIECE.Y = e.Y - SELECTED_PIECE.OffsetY;
                 this.Invalidate();
@@ -568,6 +575,18 @@ namespace PuzzleWin
             this.Show();
             notifyIcon.Visible = false;
             SW.Start();
+        }
+
+        private void ShowPic_OnClick(object sender, EventArgs e)
+        {
+            if (BG)
+            {
+                menuShowPic.Text = "Show Picture";
+            }
+            else
+                menuShowPic.Text = "Hide Picture";
+            BG = !BG;
+            this.Invalidate();
         }
     }
 }
