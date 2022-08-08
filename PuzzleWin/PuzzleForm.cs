@@ -179,6 +179,7 @@ namespace PuzzleWin
             public void draw(Graphics CANVAS, Graphics COLOR, SizeW SIZE, Image IMG)
             {
                 Pen pen = new Pen(Color.Transparent);
+                Pen blackPen = new Pen(Color.Black, 2F);
                 Point startP = new Point((int)this.X, (int)this.Y);
                 GraphicsPath path = new GraphicsPath();
 
@@ -305,6 +306,7 @@ namespace PuzzleWin
                     temp3.Y = (int)(this.Y + this.Height * Math.Abs(this.Left) - tabWidth);
 
                     path.AddBezier(temp4, temp3, temp2, temp1);
+                    path.AddLine(temp1, startP);
                 }
                 else
                     path.AddLine(
@@ -321,6 +323,8 @@ namespace PuzzleWin
                     (int)(this.rowIndex * (int)IMG.Height / SIZE.Rows - scaledTabHeight),
                     (int)(IMG.Width / SIZE.Columns + scaledTabHeight * 2),
                     (int)(IMG.Height / SIZE.Rows + scaledTabHeight * 2), GraphicsUnit.Pixel);
+
+                CANVAS.DrawPath(blackPen, path);
 
                 COLOR.DrawPath(pen, path);
                 COLOR.SetClip(region, CombineMode.Replace);
@@ -378,8 +382,8 @@ namespace PuzzleWin
                 TRANSCAN.FillRectangle(new SolidBrush(Color.White), rect);
             TRANSCAN.DrawRectangle(new Pen(Color.Black), (int)SIZE.X - 1, (int)SIZE.Y - 1, (int)SIZE.Width + 2, (int)SIZE.Height + 2);
 
-            SIZE.Rows = 6;
-            SIZE.Columns = 4;
+            SIZE.Rows = 9;
+            SIZE.Columns = 6;
             
             updateCanvas();
 
