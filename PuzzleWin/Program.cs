@@ -11,8 +11,8 @@ namespace PuzzleWin
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
-            //Application.Run(new Form2());
-            Application.Run(new StartForm());
+            Application.Run(new PuzzleForm("D:\\Pictures\\Hololive\\Marine.jpeg"));
+            //Application.Run(new StartForm());
         }
     }
 }

@@ -19,6 +19,7 @@ namespace PuzzleWin
         Stopwatch SW = new Stopwatch();
         string FN;
         bool BG = false;
+        //Graphics GRAPH;
         
         public class SizeW
         {
@@ -95,6 +96,7 @@ namespace PuzzleWin
             private double right;
             private Color _color;
             private bool moveable;
+            private List<Piece> _connectedPieces;
 
             public Piece(int rowIndex, int columnIndex, SizeW SIZE, Color color)
             {
@@ -111,6 +113,7 @@ namespace PuzzleWin
                 this.offsetY = 0;
                 this._color = color;
                 this.moveable = true;
+                this._connectedPieces = null;
             }
             public double Bottom
             {
@@ -175,6 +178,10 @@ namespace PuzzleWin
             public bool Moveable{
                 get => moveable;
                 set { moveable = value;}
+            }
+            public List<Piece> connectedPieces
+            {
+                get => _connectedPieces;
             }
             public void draw(Graphics CANVAS, Graphics COLOR, SizeW SIZE, Image IMG)
             {
@@ -331,6 +338,21 @@ namespace PuzzleWin
                 COLOR.FillPath(new SolidBrush(this.color), path);
                 COLOR.FillRectangle(new SolidBrush(this.color), (int)(this.X - tabHeight), (int)(this.Y - tabHeight), (int)(this.Width + tabHeight * 2), (int)(this.Height * tabHeight * 2));
             }
+            public void drawAll(Graphics CANVAS, Graphics COLOR, SizeW SIZE, Image IMG)
+            {
+                if (this._connectedPieces == null)
+                {
+                    this.draw(CANVAS, COLOR, SIZE, IMG);
+                }
+                else
+                {
+                    this.draw(CANVAS, COLOR, SIZE, IMG);
+                    foreach(Piece piece in this._connectedPieces)
+                    {
+                        piece.draw(CANVAS, COLOR, SIZE, IMG);
+                    }
+                }
+            }
             public bool close()
             {
                 if (distance(new Coord{ X = this.X, Y = this.Y}, new Coord{ X = this.xCorrect, Y = this.yCorrect}) < this.Width/3)
@@ -343,6 +365,43 @@ namespace PuzzleWin
                 this.Y = this.yCorrect;
                 this.isCorrect = true;
                 this.moveable = false;
+
+                if(this._connectedPieces != null)
+                {
+                    foreach(Piece piece in this._connectedPieces)
+                    {
+                        piece.X = piece.xCorrect;
+                        piece.Y = piece.yCorrect;
+                        piece.isCorrect = true;
+                        piece.moveable = false;
+                    }
+                }
+            }
+            public void closePiece()
+            {
+
+            }
+            public void connect(Piece piece, Dictionary<Color, Piece> COLORDIC)
+            {
+                if (piece.Right == -this.Left)
+                {
+                    piece.X = this.X - piece.Width;
+                    piece.Y = this.Y;
+                    COLORDIC.Remove(piece.color);
+                    piece.color = this.color;
+                }
+                else
+                    return;
+
+                if(this._connectedPieces == null)
+                {
+                    this._connectedPieces = new List<Piece>();
+                }
+
+                this._connectedPieces.Add(piece);
+
+                //find out what side it's connected on and set x & y accordingly
+                //also set their color to be the same & remove the old color from the dic
             }
         }
 
@@ -362,9 +421,10 @@ namespace PuzzleWin
             TRANSCAN = e.Graphics;
             COLOR = Graphics.FromImage(BMP);
             COLOR.Clear(Color.Transparent);
-            //IMG = Image.FromFile("D:\\Pictures\\Hololive\\Marine.jpeg");
             IMG = Image.FromFile(FN);
+            //GRAPH = e.Graphics;
 
+            //DrawGraph();
             double resizer = SCALER * Math.Min((double)this.Width / (double)IMG.Width, (double)this.Height / (double)IMG.Height);
             SIZE.Width = resizer * IMG.Width;
             SIZE.Height = resizer * IMG.Height;
@@ -382,8 +442,8 @@ namespace PuzzleWin
                 TRANSCAN.FillRectangle(new SolidBrush(Color.White), rect);
             TRANSCAN.DrawRectangle(new Pen(Color.Black), (int)SIZE.X - 1, (int)SIZE.Y - 1, (int)SIZE.Width + 2, (int)SIZE.Height + 2);
 
-            SIZE.Rows = 9;
-            SIZE.Columns = 6;
+            SIZE.Rows = 2;
+            SIZE.Columns = 2;
             
             updateCanvas();
 
@@ -393,6 +453,21 @@ namespace PuzzleWin
                 CANVAS.DrawImage(IMG, (int)SIZE.X, (int)SIZE.Y, (int)SIZE.Width, (int)SIZE.Height);
             }
         }
+       /* public void DrawGraph()
+        {
+            int rows = this.Height;
+            int cols = this.Width;
+
+            for(int i = 0; i < rows; i += 5)
+            {
+                GRAPH.DrawLine(new Pen(Color.Black, 0.1F), new Point(i, 0), new Point(i, cols));
+            }
+            for(int j = 0; j < cols; j += 5)
+            {
+                GRAPH.DrawLine(new Pen(Color.Black, 0.1F), new Point(0, j), new Point(rows, j));
+            }
+        }
+       */
         private void PuzzleForm_Load(object sender, EventArgs e)
         {
         }
@@ -409,7 +484,7 @@ namespace PuzzleWin
             }
 
             for(int i = 0; i < PIECES.Count(); i++)
-                PIECES[i].draw(CANVAS, COLOR, SIZE, IMG);
+                PIECES[i].drawAll(CANVAS, COLOR, SIZE, IMG);
         }
         public bool isComplete()
         {
@@ -553,6 +628,21 @@ namespace PuzzleWin
                     label2.Visible = true;
                 }
             }
+            else if(SELECTED_PIECE != null)
+            {
+                Color leftPiece = BMP.GetPixel((int)(SELECTED_PIECE.X-5), (int)(SELECTED_PIECE.Y+5));
+                if(leftPiece.A == 0)
+                {
+                    leftPiece = BMP.GetPixel((int)(SELECTED_PIECE.X-5), (int)(SELECTED_PIECE.Y-5));
+                }
+
+                if(leftPiece.A != 0)
+                {
+                    Piece selectedLeft = COLORDIC[leftPiece];
+                    SELECTED_PIECE.connect(selectedLeft, COLORDIC);
+                    this.Invalidate();
+                }
+            }
             SELECTED_PIECE = null;
             PIECE_SELECTED = false;
         }
@@ -563,24 +653,30 @@ namespace PuzzleWin
                 //if you wanna move multiple pieces at once do it here
                 SELECTED_PIECE.X = e.X - SELECTED_PIECE.OffsetX;
                 SELECTED_PIECE.Y = e.Y - SELECTED_PIECE.OffsetY;
+
+                if(SELECTED_PIECE.connectedPieces != null)
+                {
+                    foreach(Piece piece in SELECTED_PIECE.connectedPieces)
+                    {
+                        piece.X = SELECTED_PIECE.X - piece.Width;
+                        piece.Y = SELECTED_PIECE.Y;
+                    }
+                }
                 this.Invalidate();
             }
         }
-
         private void Pause_OnClick(object sender, EventArgs e)
         {
             SW.Stop();
             this.Hide();
             notifyIcon.Visible = true;
         }
-
         private void notifyIcon_DoubleClick(object sender, EventArgs e)
         {
             this.Show();
             notifyIcon.Visible = false;
             SW.Start();
         }
-
         private void ShowPic_OnClick(object sender, EventArgs e)
         {
             if (BG)
