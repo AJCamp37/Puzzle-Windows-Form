@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 
 namespace PuzzleWin
 {
@@ -97,6 +98,10 @@ namespace PuzzleWin
             private Color _color;
             private bool moveable;
             private List<Piece> _connectedPieces;
+            private Piece _leftPiece;
+            private Piece _rightPiece;
+            private Piece _bottomPiece;
+            private Piece _topPiece;
 
             public Piece(int rowIndex, int columnIndex, SizeW SIZE, Color color)
             {
@@ -114,6 +119,30 @@ namespace PuzzleWin
                 this._color = color;
                 this.moveable = true;
                 this._connectedPieces = null;
+                this.topPiece = null;
+                this.bottomPiece = null;
+                this.leftPiece = null;
+                this.rightPiece = null;
+            }
+            public Piece leftPiece
+            {
+                get => _leftPiece;
+                set { _leftPiece = value; } 
+            }
+            public Piece rightPiece 
+            {
+                get => _rightPiece;
+                set { _rightPiece= value; } 
+            }
+            public Piece bottomPiece 
+            {
+                get => _bottomPiece;
+                set { _bottomPiece= value; } 
+            }
+            public Piece topPiece 
+            {
+                get => _topPiece;
+                set { _topPiece = value; } 
             }
             public double Bottom
             {
@@ -377,25 +406,109 @@ namespace PuzzleWin
                     }
                 }
             }
-            public void closePiece()
+            public void closePiece( Piece piece, char dir, Dictionary<Color, Piece> COLORDIC)
             {
+                if(dir == 'L')
+                {
+                    if (this.Left == -piece.Right)
+                        this.connect(piece, COLORDIC);
+                }
+                else if(dir == 'R')
+                {
+                    if (this.Right == -piece.Left)
+                        return;
+                    else
+                        return;
+                }
+                else if(dir == 'T')
+                {
+                    if (this.Top == -piece.Bottom)
+                        return;
+                    else
+                        return;
+                }
+                else
+                {
+                    if (this.Bottom == -piece.Top)
+                        return;
+                    else
+                        return;
+                }
 
+                if (this.connectedPieces != null)
+                {
+                    Piece child = null;
+
+                    if(dir == 'L')
+                    {
+                        child = this.connectedPieces.Find(x => x.Right == -piece.Left);
+                        if (child != null)
+                        {
+                            Console.WriteLine(child.X.ToString());
+                            child.connect(piece, COLORDIC);
+                        }
+                        else
+                            return;
+                    }
+                }
+            }
+            public void connectChild(Piece child, Piece piece, char dir, Dictionary<Color, Piece> COLORDIC)
+            {
+                if(dir == 'L')
+                {
+                    piece.rightPiece = child;
+                    child.leftPiece = piece;
+                    piece.X = child.X - piece.Width;
+                    piece.Y = child.Y;
+                    COLORDIC.Remove(piece.color);
+                    piece.color = child.color;
+                }
             }
             public void connect(Piece piece, Dictionary<Color, Piece> COLORDIC)
             {
                 if (piece.Right == -this.Left)
                 {
+                    piece.rightPiece = this;
+                    this.leftPiece = piece;
                     piece.X = this.X - piece.Width;
                     piece.Y = this.Y;
                     COLORDIC.Remove(piece.color);
                     piece.color = this.color;
+                    Console.WriteLine("connected piece: [" + this.rowIndex.ToString() + "," + this.columnIndex.ToString()  + "] to piece: [" + piece.rowIndex.ToString() + "," + piece.columnIndex.ToString() + "]");
+
+                    if(piece._connectedPieces != null)
+                    {
+                        foreach(Piece con in piece._connectedPieces)
+                        {
+                            if (con.rightPiece != null)
+                                con.X = con.rightPiece.X - con.Width;
+                            else
+                                con.X = con.leftPiece.X + con.leftPiece.Width;
+
+                            /*
+                            if (con.topPiece != null)
+                                con.Y = con.topPiece.Y + con.topPiece.Height;
+                            else
+                                con.Y = con.bottomPiece.Y - con.Height;
+                            */
+                            con.Y = this.Y;
+                                
+                        }
+                    }
                 }
                 else
                     return;
 
-                if(this._connectedPieces == null)
-                {
+                if(this._connectedPieces == null && piece._connectedPieces == null)
                     this._connectedPieces = new List<Piece>();
+                else if(piece._connectedPieces != null)
+                {
+                    this._connectedPieces = new List<Piece>(piece._connectedPieces);
+                    piece._connectedPieces.Clear();
+                    foreach(Piece con in this._connectedPieces)
+                    {
+                        con.color = this.color;
+                    }
                 }
 
                 this._connectedPieces.Add(piece);
@@ -442,8 +555,8 @@ namespace PuzzleWin
                 TRANSCAN.FillRectangle(new SolidBrush(Color.White), rect);
             TRANSCAN.DrawRectangle(new Pen(Color.Black), (int)SIZE.X - 1, (int)SIZE.Y - 1, (int)SIZE.Width + 2, (int)SIZE.Height + 2);
 
-            SIZE.Rows = 2;
-            SIZE.Columns = 2;
+            SIZE.Rows = 3;
+            SIZE.Columns = 3;
             
             updateCanvas();
 
@@ -632,15 +745,17 @@ namespace PuzzleWin
             {
                 Color leftPiece = BMP.GetPixel((int)(SELECTED_PIECE.X-5), (int)(SELECTED_PIECE.Y+5));
                 if(leftPiece.A == 0)
-                {
                     leftPiece = BMP.GetPixel((int)(SELECTED_PIECE.X-5), (int)(SELECTED_PIECE.Y-5));
-                }
 
                 if(leftPiece.A != 0)
                 {
                     Piece selectedLeft = COLORDIC[leftPiece];
-                    SELECTED_PIECE.connect(selectedLeft, COLORDIC);
-                    this.Invalidate();
+                    if ((SELECTED_PIECE.connectedPieces == null) || (SELECTED_PIECE.connectedPieces != null && !SELECTED_PIECE.connectedPieces.Contains(selectedLeft)))
+                    {
+                        SELECTED_PIECE.closePiece(selectedLeft, 'L', COLORDIC);
+                        this.Invalidate();
+                    } 
+                        //SELECTED_PIECE.connect(selectedLeft, COLORDIC);
                 }
             }
             SELECTED_PIECE = null;
@@ -654,16 +769,71 @@ namespace PuzzleWin
                 SELECTED_PIECE.X = e.X - SELECTED_PIECE.OffsetX;
                 SELECTED_PIECE.Y = e.Y - SELECTED_PIECE.OffsetY;
 
+                movePieces(SELECTED_PIECE, new List<Piece>());
+
+                /*
                 if(SELECTED_PIECE.connectedPieces != null)
                 {
+                    if(SELECTED_PIECE.leftPiece != null)
+                    {
+                        SELECTED_PIECE.leftPiece.X = SELECTED_PIECE.X - SELECTED_PIECE.leftPiece.Width;
+                        SELECTED_PIECE.leftPiece.Y = SELECTED_PIECE.Y;
+                    }
                     foreach(Piece piece in SELECTED_PIECE.connectedPieces)
                     {
-                        piece.X = SELECTED_PIECE.X - piece.Width;
-                        piece.Y = SELECTED_PIECE.Y;
+                        if(piece != SELECTED_PIECE.leftPiece)
+                        {
+                            if (piece.rightPiece != null)
+                            {
+                                piece.X = piece.rightPiece.X - piece.Width;
+                                piece.Y = piece.rightPiece.Y;
+                            }
+                        }
+                        //need to change all based off of selectedpiece
+                        //when pieces are added to connected piece they need to be in order from left to right
+                        //piece.X = SELECTED_PIECE.X - piece.Width;
+                        //piece.Y = SELECTED_PIECE.Y;
                     }
                 }
+                */
                 this.Invalidate();
             }
+        }
+        private void movePieces(Piece piece, List<Piece> visited)
+        {
+            if (visited.Contains(piece))
+                return;
+
+            visited.Add(piece);
+
+            if(piece.leftPiece != null)
+            {
+                piece.leftPiece.X = piece.X - piece.leftPiece.Width;
+                piece.leftPiece.Y = piece.Y;
+                movePieces(piece.leftPiece, visited);
+            }
+
+            if(piece.rightPiece != null)
+            {
+                piece.rightPiece.X = piece.X + piece.Width;
+                piece.rightPiece.Y = piece.Y;
+                movePieces(piece.rightPiece, visited);
+            }
+            
+            if(piece.topPiece != null)
+            {
+                piece.topPiece.X = piece.X;
+                piece.topPiece.Y = piece.Y - piece.topPiece.Height;
+                movePieces(piece.topPiece, visited);
+            }
+
+            if(piece.bottomPiece != null)
+            {
+                piece.bottomPiece.X = piece.X;
+                piece.bottomPiece.Y = piece.Y + piece.Height;
+                movePieces(piece.bottomPiece, visited);
+            }
+            return;
         }
         private void Pause_OnClick(object sender, EventArgs e)
         {
