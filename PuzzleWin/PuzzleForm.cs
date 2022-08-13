@@ -388,6 +388,51 @@ namespace PuzzleWin
                     return true;
                 return false;
             }
+            private void snapAll( Piece piece, List<Piece> visited)
+            {
+                if (visited.Contains(piece))
+                    return;
+
+                visited.Add(piece);
+
+                if(piece.leftPiece != null)
+                {
+                    piece.leftPiece.X = piece.leftPiece.xCorrect;
+                    piece.leftPiece.Y = piece.leftPiece.yCorrect;
+                    piece.leftPiece.moveable = false;
+                    piece.leftPiece.correct = true;
+
+                    this.snapAll(piece.leftPiece, visited);
+                }
+                if(piece.rightPiece != null)
+                {
+                    piece.rightPiece.X = piece.rightPiece.xCorrect;
+                    piece.rightPiece.Y = piece.rightPiece.yCorrect;
+                    piece.rightPiece.moveable = false;
+                    piece.rightPiece.correct = true;
+
+                    this.snapAll(piece.rightPiece, visited);
+                }
+                if(piece.topPiece != null)
+                {
+                    piece.topPiece.X = piece.topPiece.xCorrect;
+                    piece.topPiece.Y = piece.topPiece.yCorrect;
+                    piece.topPiece.moveable = false;
+                    piece.topPiece.correct = true;
+
+                    this.snapAll(piece.topPiece, visited);
+                }
+                if(piece.bottomPiece != null)
+                {
+                    piece.bottomPiece.X = piece.bottomPiece.xCorrect;
+                    piece.bottomPiece.Y = piece.bottomPiece.yCorrect;
+                    piece.bottomPiece.moveable = false;
+                    piece.bottomPiece.correct = true;
+                    
+                    this.snapAll(piece.bottomPiece, visited);
+                }
+                return;
+            }
             public void snap()
             {
                 this.X = this.xCorrect;
@@ -395,6 +440,9 @@ namespace PuzzleWin
                 this.isCorrect = true;
                 this.moveable = false;
 
+                this.snapAll(this, new List<Piece>());
+
+                /*
                 if(this._connectedPieces != null)
                 {
                     foreach(Piece piece in this._connectedPieces)
@@ -405,6 +453,7 @@ namespace PuzzleWin
                         piece.moveable = false;
                     }
                 }
+                */
             }
             public void closePiece( Piece piece, char dir, Dictionary<Color, Piece> COLORDIC)
             {
@@ -434,7 +483,6 @@ namespace PuzzleWin
                     else
                         return;
                 }
-
                 if (this.connectedPieces != null)
                 {
                     Piece child = null;
@@ -460,9 +508,44 @@ namespace PuzzleWin
                     child.leftPiece = piece;
                     piece.X = child.X - piece.Width;
                     piece.Y = child.Y;
-                    COLORDIC.Remove(piece.color);
-                    piece.color = child.color;
                 }
+            }
+
+            private void updatePieces( Piece piece, List<Piece> visited)
+            {
+                if (visited.Contains(piece))
+                    return;
+
+                visited.Add(piece);
+
+                if(piece.leftPiece != null)
+                {
+                    piece.leftPiece.X = piece.X - piece.leftPiece.Width;
+                    piece.leftPiece.Y = piece.Y;
+                    this.updatePieces(piece.leftPiece, visited);
+                }
+
+                if(piece.rightPiece != null)
+                {
+                    piece.rightPiece.X = piece.X + piece.Width;
+                    piece.rightPiece.Y = piece.Y;
+                    this.updatePieces(piece.rightPiece, visited);
+                }
+                
+                if(piece.topPiece != null)
+                {
+                    piece.topPiece.X = piece.X;
+                    piece.topPiece.Y = piece.Y - piece.topPiece.Height;
+                    this.updatePieces(piece.topPiece, visited);
+                }
+
+                if(piece.bottomPiece != null)
+                {
+                    piece.bottomPiece.X = piece.X;
+                    piece.bottomPiece.Y = piece.Y + piece.Height;
+                    this.updatePieces(piece.bottomPiece, visited);
+                }
+                return;
             }
             public void connect(Piece piece, Dictionary<Color, Piece> COLORDIC)
             {
@@ -472,10 +555,11 @@ namespace PuzzleWin
                     this.leftPiece = piece;
                     piece.X = this.X - piece.Width;
                     piece.Y = this.Y;
-                    COLORDIC.Remove(piece.color);
-                    piece.color = this.color;
                     Console.WriteLine("connected piece: [" + this.rowIndex.ToString() + "," + this.columnIndex.ToString()  + "] to piece: [" + piece.rowIndex.ToString() + "," + piece.columnIndex.ToString() + "]");
 
+                    this.updatePieces(this, new List<Piece>());
+
+                    /* 
                     if(piece._connectedPieces != null)
                     {
                         foreach(Piece con in piece._connectedPieces)
@@ -484,17 +568,15 @@ namespace PuzzleWin
                                 con.X = con.rightPiece.X - con.Width;
                             else
                                 con.X = con.leftPiece.X + con.leftPiece.Width;
-
-                            /*
                             if (con.topPiece != null)
                                 con.Y = con.topPiece.Y + con.topPiece.Height;
                             else
                                 con.Y = con.bottomPiece.Y - con.Height;
-                            */
                             con.Y = this.Y;
                                 
                         }
                     }
+            */
                 }
                 else
                     return;
@@ -512,9 +594,6 @@ namespace PuzzleWin
                 }
 
                 this._connectedPieces.Add(piece);
-
-                //find out what side it's connected on and set x & y accordingly
-                //also set their color to be the same & remove the old color from the dic
             }
         }
 
@@ -555,8 +634,8 @@ namespace PuzzleWin
                 TRANSCAN.FillRectangle(new SolidBrush(Color.White), rect);
             TRANSCAN.DrawRectangle(new Pen(Color.Black), (int)SIZE.X - 1, (int)SIZE.Y - 1, (int)SIZE.Width + 2, (int)SIZE.Height + 2);
 
-            SIZE.Rows = 3;
-            SIZE.Columns = 3;
+            SIZE.Rows = 9;
+            SIZE.Columns = 6;
             
             updateCanvas();
 
@@ -696,6 +775,38 @@ namespace PuzzleWin
                 PIECES[i].isCorrect = false;
             }
         }
+        public void removePieces(Piece piece, List<Piece> visited)
+        {
+            if (visited.Contains(piece))
+                return;
+            visited.Add(piece);
+
+            if(piece.leftPiece != null)
+            {
+                PIECES.Remove(piece.leftPiece);
+                PIECES.Add(piece.leftPiece);
+                Console.WriteLine("Removed a left piece");
+            }
+            if (piece.rightPiece != null)
+            {
+                PIECES.Remove(piece.rightPiece);
+                PIECES.Add(piece.rightPiece);
+                Console.WriteLine("Removed a right piece");
+            }
+            if (piece.topPiece != null)
+            {
+                PIECES.Remove(piece.topPiece);
+                PIECES.Add(piece.topPiece);
+                Console.WriteLine("Removed a top piece");
+            }
+            if (piece.bottomPiece != null)
+            {
+                PIECES.Remove(piece.bottomPiece);
+                PIECES.Add(piece.bottomPiece);
+                Console.WriteLine("Removed a bottom piece");
+            }
+            return;
+        }
         private void PuzzleForm_MouseDown(object sender, MouseEventArgs e)
         {
             Color clicked = BMP.GetPixel(e.X, e.Y);
@@ -715,9 +826,10 @@ namespace PuzzleWin
                 else
                 {
                     PIECE_SELECTED = true;
-                    int i = PIECES.IndexOf(SELECTED_PIECE);
+                    //int i = PIECES.IndexOf(SELECTED_PIECE);
                     PIECES.Remove(SELECTED_PIECE);
                     PIECES.Add(SELECTED_PIECE);
+                    removePieces(SELECTED_PIECE, new List<Piece>());
                     SELECTED_PIECE.OffsetX = e.X - SELECTED_PIECE.X;
                     SELECTED_PIECE.OffsetY = e.Y - SELECTED_PIECE.Y;
                 }
@@ -744,18 +856,17 @@ namespace PuzzleWin
             else if(SELECTED_PIECE != null)
             {
                 Color leftPiece = BMP.GetPixel((int)(SELECTED_PIECE.X-5), (int)(SELECTED_PIECE.Y+5));
+
                 if(leftPiece.A == 0)
                     leftPiece = BMP.GetPixel((int)(SELECTED_PIECE.X-5), (int)(SELECTED_PIECE.Y-5));
-
                 if(leftPiece.A != 0)
                 {
                     Piece selectedLeft = COLORDIC[leftPiece];
-                    if ((SELECTED_PIECE.connectedPieces == null) || (SELECTED_PIECE.connectedPieces != null && !SELECTED_PIECE.connectedPieces.Contains(selectedLeft)))
-                    {
+                   // if ((SELECTED_PIECE.connectedPieces == null) || (SELECTED_PIECE.connectedPieces != null && !SELECTED_PIECE.connectedPieces.Contains(selectedLeft)))
+                   // {
                         SELECTED_PIECE.closePiece(selectedLeft, 'L', COLORDIC);
                         this.Invalidate();
-                    } 
-                        //SELECTED_PIECE.connect(selectedLeft, COLORDIC);
+                    //} 
                 }
             }
             SELECTED_PIECE = null;
