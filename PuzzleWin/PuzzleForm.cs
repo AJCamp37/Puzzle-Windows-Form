@@ -455,34 +455,42 @@ namespace PuzzleWin
                 }
                 */
             }
-            public void closePiece( Piece piece, char dir, Dictionary<Color, Piece> COLORDIC)
+            public bool closePiece( Piece piece, char dir, Dictionary<Color, Piece> COLORDIC)
             {
                 if(dir == 'L')
                 {
                     if (this.Left == -piece.Right)
+                    {
                         this.connect(piece, COLORDIC);
+                        return true;
+                    }
                 }
                 else if(dir == 'R')
                 {
                     if (this.Right == -piece.Left)
+                    {
                         this.connect(piece, COLORDIC);
-                    else
-                        Console.WriteLine("not it");
+                        return true;
+                    }
                 }
                 else if(dir == 'T')
                 {
                     if (this.Top == -piece.Bottom)
-                        return;
-                    else
-                        return;
+                    {
+                        this.connect(piece, COLORDIC);
+                        return true;
+                    }
                 }
                 else
                 {
                     if (this.Bottom == -piece.Top)
-                        return;
-                    else
-                        return;
+                    {
+                        this.connect(piece, COLORDIC);
+                        return true;
+                    }
                 }
+
+                return false;
                 /*
                 if (this.connectedPieces != null)
                 {
@@ -556,7 +564,7 @@ namespace PuzzleWin
                     this.leftPiece = piece;
                     piece.X = this.X - piece.Width;
                     piece.Y = this.Y;
-                    Console.WriteLine("connected piece: [" + this.rowIndex.ToString() + "," + this.columnIndex.ToString()  + "] to piece: [" + piece.rowIndex.ToString() + "," + piece.columnIndex.ToString() + "]");
+                    //Console.WriteLine("connected piece: [" + this.rowIndex.ToString() + "," + this.columnIndex.ToString()  + "] to piece: [" + piece.rowIndex.ToString() + "," + piece.columnIndex.ToString() + "]");
 
                     this.updatePieces(this, new List<Piece>());
                 }
@@ -566,6 +574,24 @@ namespace PuzzleWin
                     this.rightPiece = piece;
                     piece.X = this.X + this.Width;
                     piece.Y = this.Y;
+
+                    this.updatePieces(this, new List<Piece>());
+                }
+                else if(piece.Bottom == -this.Top)
+                {
+                    piece.bottomPiece = this;
+                    this.topPiece = piece;
+                    piece.X = this.X;
+                    piece.Y = this.Y + this.Height;
+
+                    this.updatePieces(this, new List<Piece>());
+                }
+                else if(piece.Top == -this.Bottom)
+                {
+                    piece.topPiece = this;
+                    this.bottomPiece = piece;
+                    piece.X = this.X;
+                    piece.Y = this.Y + piece.Height;
 
                     this.updatePieces(this, new List<Piece>());
                 }
@@ -644,8 +670,8 @@ namespace PuzzleWin
                 TRANSCAN.FillRectangle(new SolidBrush(Color.White), rect);
             TRANSCAN.DrawRectangle(new Pen(Color.Black), (int)SIZE.X - 1, (int)SIZE.Y - 1, (int)SIZE.Width + 2, (int)SIZE.Height + 2);
 
-            SIZE.Rows = 6;
-            SIZE.Columns = 4;
+            SIZE.Rows = 3;
+            SIZE.Columns = 2;
             
             updateCanvas();
 
@@ -867,6 +893,8 @@ namespace PuzzleWin
             {
                 //might be able to get rid of the return statements because you want the program to
                 //make sure that all pieces are actually connected in name as well
+
+                //add trys to these
                 Color tryPiece = BMP.GetPixel((int)(SELECTED_PIECE.X-5), (int)(SELECTED_PIECE.Y+5));
 
                 if(tryPiece.A == 0)
@@ -876,11 +904,14 @@ namespace PuzzleWin
                     Piece selectedLeft = COLORDIC[tryPiece];
                     if(selectedLeft != SELECTED_PIECE.leftPiece)
                     {
-                        SELECTED_PIECE.closePiece(selectedLeft, 'L', COLORDIC);
-                        SELECTED_PIECE = null;
-                        PIECE_SELECTED = false;
-                        this.Invalidate();
-                        return;
+                        if(SELECTED_PIECE.closePiece(selectedLeft, 'L', COLORDIC))
+                        {
+                            Console.WriteLine("left");
+                            SELECTED_PIECE = null;
+                            PIECE_SELECTED = false;
+                            this.Invalidate();
+                            return;
+                        }
                     }
                 }
 
@@ -893,11 +924,53 @@ namespace PuzzleWin
                     Piece selectedRight = COLORDIC[tryPiece];
                     if(selectedRight != SELECTED_PIECE.rightPiece)
                     {
-                        SELECTED_PIECE.closePiece(selectedRight, 'R', COLORDIC);
-                        SELECTED_PIECE = null;
-                        PIECE_SELECTED = false;
-                        this.Invalidate();
-                        return;
+                        if(SELECTED_PIECE.closePiece(selectedRight, 'R', COLORDIC)){
+                            Console.WriteLine("right");
+                            SELECTED_PIECE = null;
+                            PIECE_SELECTED = false;
+                            this.Invalidate();
+                            return;
+                        }
+                    }
+                }
+
+                tryPiece = BMP.GetPixel((int)(SELECTED_PIECE.X + 5), (int)(SELECTED_PIECE.Y - 5));
+
+                if(tryPiece.A == 0)
+                    tryPiece = BMP.GetPixel((int)(SELECTED_PIECE.X - 5), (int)(SELECTED_PIECE.Y - 5));
+                if(tryPiece.A != 0)
+                {
+                    Piece selectedTop = COLORDIC[tryPiece];
+                    if(selectedTop != SELECTED_PIECE.topPiece)
+                    {
+                        if(SELECTED_PIECE.closePiece(selectedTop, 'T', COLORDIC))
+                        {
+                            Console.WriteLine("top");
+                            SELECTED_PIECE = null;
+                            PIECE_SELECTED = false;
+                            this.Invalidate();
+                            return;
+                        }
+                    }
+                }
+
+                tryPiece = BMP.GetPixel((int)(SELECTED_PIECE.X + 5), (int)(SELECTED_PIECE.Y + SELECTED_PIECE.Height + 5));
+
+                if(tryPiece.A == 0)
+                    tryPiece = BMP.GetPixel((int)(SELECTED_PIECE.X - 5), (int)(SELECTED_PIECE.Y + SELECTED_PIECE.Height + 5));
+                if(tryPiece.A != 0)
+                {
+                    Piece selectedBottom = COLORDIC[tryPiece];
+                    if(selectedBottom != SELECTED_PIECE.bottomPiece)
+                    {
+                        if(SELECTED_PIECE.closePiece(selectedBottom, 'B', COLORDIC))
+                        {
+                            Console.WriteLine("bottom");
+                            SELECTED_PIECE = null;
+                            PIECE_SELECTED = false;
+                            this.Invalidate();
+                            return;
+                        }
                     }
                 }
             }
