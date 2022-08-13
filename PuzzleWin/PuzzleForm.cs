@@ -465,9 +465,9 @@ namespace PuzzleWin
                 else if(dir == 'R')
                 {
                     if (this.Right == -piece.Left)
-                        return;
+                        this.connect(piece, COLORDIC);
                     else
-                        return;
+                        Console.WriteLine("not it");
                 }
                 else if(dir == 'T')
                 {
@@ -483,6 +483,7 @@ namespace PuzzleWin
                     else
                         return;
                 }
+                /*
                 if (this.connectedPieces != null)
                 {
                     Piece child = null;
@@ -499,6 +500,7 @@ namespace PuzzleWin
                             return;
                     }
                 }
+                */
             }
             public void connectChild(Piece child, Piece piece, char dir, Dictionary<Color, Piece> COLORDIC)
             {
@@ -510,7 +512,6 @@ namespace PuzzleWin
                     piece.Y = child.Y;
                 }
             }
-
             private void updatePieces( Piece piece, List<Piece> visited)
             {
                 if (visited.Contains(piece))
@@ -558,7 +559,18 @@ namespace PuzzleWin
                     Console.WriteLine("connected piece: [" + this.rowIndex.ToString() + "," + this.columnIndex.ToString()  + "] to piece: [" + piece.rowIndex.ToString() + "," + piece.columnIndex.ToString() + "]");
 
                     this.updatePieces(this, new List<Piece>());
+                }
+                else if(piece.Left == -this.Right)
+                {
+                    piece.leftPiece = this;
+                    this.rightPiece = piece;
+                    piece.X = this.X + this.Width;
+                    piece.Y = this.Y;
 
+                    this.updatePieces(this, new List<Piece>());
+                }
+                else
+                    return;
                     /* 
                     if(piece._connectedPieces != null)
                     {
@@ -577,10 +589,7 @@ namespace PuzzleWin
                         }
                     }
             */
-                }
-                else
-                    return;
-
+/*
                 if(this._connectedPieces == null && piece._connectedPieces == null)
                     this._connectedPieces = new List<Piece>();
                 else if(piece._connectedPieces != null)
@@ -594,6 +603,7 @@ namespace PuzzleWin
                 }
 
                 this._connectedPieces.Add(piece);
+*/
             }
         }
 
@@ -634,8 +644,8 @@ namespace PuzzleWin
                 TRANSCAN.FillRectangle(new SolidBrush(Color.White), rect);
             TRANSCAN.DrawRectangle(new Pen(Color.Black), (int)SIZE.X - 1, (int)SIZE.Y - 1, (int)SIZE.Width + 2, (int)SIZE.Height + 2);
 
-            SIZE.Rows = 9;
-            SIZE.Columns = 6;
+            SIZE.Rows = 6;
+            SIZE.Columns = 4;
             
             updateCanvas();
 
@@ -855,18 +865,40 @@ namespace PuzzleWin
             }
             else if(SELECTED_PIECE != null)
             {
-                Color leftPiece = BMP.GetPixel((int)(SELECTED_PIECE.X-5), (int)(SELECTED_PIECE.Y+5));
+                //might be able to get rid of the return statements because you want the program to
+                //make sure that all pieces are actually connected in name as well
+                Color tryPiece = BMP.GetPixel((int)(SELECTED_PIECE.X-5), (int)(SELECTED_PIECE.Y+5));
 
-                if(leftPiece.A == 0)
-                    leftPiece = BMP.GetPixel((int)(SELECTED_PIECE.X-5), (int)(SELECTED_PIECE.Y-5));
-                if(leftPiece.A != 0)
+                if(tryPiece.A == 0)
+                    tryPiece = BMP.GetPixel((int)(SELECTED_PIECE.X-5), (int)(SELECTED_PIECE.Y-5));
+                if(tryPiece.A != 0)
                 {
-                    Piece selectedLeft = COLORDIC[leftPiece];
-                   // if ((SELECTED_PIECE.connectedPieces == null) || (SELECTED_PIECE.connectedPieces != null && !SELECTED_PIECE.connectedPieces.Contains(selectedLeft)))
-                   // {
+                    Piece selectedLeft = COLORDIC[tryPiece];
+                    if(selectedLeft != SELECTED_PIECE.leftPiece)
+                    {
                         SELECTED_PIECE.closePiece(selectedLeft, 'L', COLORDIC);
+                        SELECTED_PIECE = null;
+                        PIECE_SELECTED = false;
                         this.Invalidate();
-                    //} 
+                        return;
+                    }
+                }
+
+                tryPiece = BMP.GetPixel((int)(SELECTED_PIECE.X + SELECTED_PIECE.Width + 5), (int)(SELECTED_PIECE.Y + 5));
+
+                if(tryPiece.A == 0)
+                    tryPiece = BMP.GetPixel((int)(SELECTED_PIECE.X + SELECTED_PIECE.Width + 5), (int)(SELECTED_PIECE.Y - 5));
+                if(tryPiece.A != 0)
+                {
+                    Piece selectedRight = COLORDIC[tryPiece];
+                    if(selectedRight != SELECTED_PIECE.rightPiece)
+                    {
+                        SELECTED_PIECE.closePiece(selectedRight, 'R', COLORDIC);
+                        SELECTED_PIECE = null;
+                        PIECE_SELECTED = false;
+                        this.Invalidate();
+                        return;
+                    }
                 }
             }
             SELECTED_PIECE = null;
