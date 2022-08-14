@@ -558,15 +558,16 @@ namespace PuzzleWin
             }
             public void connect(Piece piece, Dictionary<Color, Piece> COLORDIC)
             {
+                if (!piece.moveable)
+                    return;
                 if (piece.Right == -this.Left)
                 {
                     piece.rightPiece = this;
                     this.leftPiece = piece;
                     piece.X = this.X - piece.Width;
                     piece.Y = this.Y;
-                    //Console.WriteLine("connected piece: [" + this.rowIndex.ToString() + "," + this.columnIndex.ToString()  + "] to piece: [" + piece.rowIndex.ToString() + "," + piece.columnIndex.ToString() + "]");
-
                     this.updatePieces(this, new List<Piece>());
+                    //Console.WriteLine("connected piece: [" + this.rowIndex.ToString() + "," + this.columnIndex.ToString()  + "] to piece: [" + piece.rowIndex.ToString() + "," + piece.columnIndex.ToString() + "]");
                 }
                 else if(piece.Left == -this.Right)
                 {
@@ -670,8 +671,8 @@ namespace PuzzleWin
                 TRANSCAN.FillRectangle(new SolidBrush(Color.White), rect);
             TRANSCAN.DrawRectangle(new Pen(Color.Black), (int)SIZE.X - 1, (int)SIZE.Y - 1, (int)SIZE.Width + 2, (int)SIZE.Height + 2);
 
-            SIZE.Rows = 3;
-            SIZE.Columns = 2;
+            SIZE.Rows = 9;
+            SIZE.Columns = 6;
             
             updateCanvas();
 
@@ -891,9 +892,6 @@ namespace PuzzleWin
             }
             else if(SELECTED_PIECE != null)
             {
-                //might be able to get rid of the return statements because you want the program to
-                //make sure that all pieces are actually connected in name as well
-
                 //add trys to these
                 Color tryPiece = BMP.GetPixel((int)(SELECTED_PIECE.X-5), (int)(SELECTED_PIECE.Y+5));
 
