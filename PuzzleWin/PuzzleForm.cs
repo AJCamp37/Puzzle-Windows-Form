@@ -97,7 +97,6 @@ namespace PuzzleWin
             private double right;
             private Color _color;
             private bool moveable;
-            private List<Piece> _connectedPieces;
             private Piece _leftPiece;
             private Piece _rightPiece;
             private Piece _bottomPiece;
@@ -118,7 +117,6 @@ namespace PuzzleWin
                 this.offsetY = 0;
                 this._color = color;
                 this.moveable = true;
-                this._connectedPieces = null;
                 this.topPiece = null;
                 this.bottomPiece = null;
                 this.leftPiece = null;
@@ -207,10 +205,6 @@ namespace PuzzleWin
             public bool Moveable{
                 get => moveable;
                 set { moveable = value;}
-            }
-            public List<Piece> connectedPieces
-            {
-                get => _connectedPieces;
             }
             public void draw(Graphics CANVAS, Graphics COLOR, SizeW SIZE, Image IMG)
             {
@@ -369,18 +363,7 @@ namespace PuzzleWin
             }
             public void drawAll(Graphics CANVAS, Graphics COLOR, SizeW SIZE, Image IMG)
             {
-                if (this._connectedPieces == null)
-                {
                     this.draw(CANVAS, COLOR, SIZE, IMG);
-                }
-                else
-                {
-                    this.draw(CANVAS, COLOR, SIZE, IMG);
-                    foreach(Piece piece in this._connectedPieces)
-                    {
-                        piece.draw(CANVAS, COLOR, SIZE, IMG);
-                    }
-                }
             }
             public bool close()
             {
@@ -441,19 +424,6 @@ namespace PuzzleWin
                 this.moveable = false;
 
                 this.snapAll(this, new List<Piece>());
-
-                /*
-                if(this._connectedPieces != null)
-                {
-                    foreach(Piece piece in this._connectedPieces)
-                    {
-                        piece.X = piece.xCorrect;
-                        piece.Y = piece.yCorrect;
-                        piece.isCorrect = true;
-                        piece.moveable = false;
-                    }
-                }
-                */
             }
             public bool closePiece( Piece piece, char dir, Dictionary<Color, Piece> COLORDIC)
             {
@@ -491,24 +461,6 @@ namespace PuzzleWin
                 }
 
                 return false;
-                /*
-                if (this.connectedPieces != null)
-                {
-                    Piece child = null;
-
-                    if(dir == 'L')
-                    {
-                        child = this.connectedPieces.Find(x => x.Right == -piece.Left);
-                        if (child != null)
-                        {
-                            Console.WriteLine(child.X.ToString());
-                            child.connect(piece, COLORDIC);
-                        }
-                        else
-                            return;
-                    }
-                }
-                */
             }
             public void connectChild(Piece child, Piece piece, char dir, Dictionary<Color, Piece> COLORDIC)
             {
@@ -598,39 +550,6 @@ namespace PuzzleWin
                 }
                 else
                     return;
-                    /* 
-                    if(piece._connectedPieces != null)
-                    {
-                        foreach(Piece con in piece._connectedPieces)
-                        {
-                            if (con.rightPiece != null)
-                                con.X = con.rightPiece.X - con.Width;
-                            else
-                                con.X = con.leftPiece.X + con.leftPiece.Width;
-                            if (con.topPiece != null)
-                                con.Y = con.topPiece.Y + con.topPiece.Height;
-                            else
-                                con.Y = con.bottomPiece.Y - con.Height;
-                            con.Y = this.Y;
-                                
-                        }
-                    }
-            */
-/*
-                if(this._connectedPieces == null && piece._connectedPieces == null)
-                    this._connectedPieces = new List<Piece>();
-                else if(piece._connectedPieces != null)
-                {
-                    this._connectedPieces = new List<Piece>(piece._connectedPieces);
-                    piece._connectedPieces.Clear();
-                    foreach(Piece con in this._connectedPieces)
-                    {
-                        con.color = this.color;
-                    }
-                }
-
-                this._connectedPieces.Add(piece);
-*/
             }
         }
 
@@ -671,8 +590,8 @@ namespace PuzzleWin
                 TRANSCAN.FillRectangle(new SolidBrush(Color.White), rect);
             TRANSCAN.DrawRectangle(new Pen(Color.Black), (int)SIZE.X - 1, (int)SIZE.Y - 1, (int)SIZE.Width + 2, (int)SIZE.Height + 2);
 
-            SIZE.Rows = 9;
-            SIZE.Columns = 6;
+            SIZE.Rows = 6;
+            SIZE.Columns = 4;
             
             updateCanvas();
 
@@ -985,31 +904,6 @@ namespace PuzzleWin
 
                 movePieces(SELECTED_PIECE, new List<Piece>());
 
-                /*
-                if(SELECTED_PIECE.connectedPieces != null)
-                {
-                    if(SELECTED_PIECE.leftPiece != null)
-                    {
-                        SELECTED_PIECE.leftPiece.X = SELECTED_PIECE.X - SELECTED_PIECE.leftPiece.Width;
-                        SELECTED_PIECE.leftPiece.Y = SELECTED_PIECE.Y;
-                    }
-                    foreach(Piece piece in SELECTED_PIECE.connectedPieces)
-                    {
-                        if(piece != SELECTED_PIECE.leftPiece)
-                        {
-                            if (piece.rightPiece != null)
-                            {
-                                piece.X = piece.rightPiece.X - piece.Width;
-                                piece.Y = piece.rightPiece.Y;
-                            }
-                        }
-                        //need to change all based off of selectedpiece
-                        //when pieces are added to connected piece they need to be in order from left to right
-                        //piece.X = SELECTED_PIECE.X - piece.Width;
-                        //piece.Y = SELECTED_PIECE.Y;
-                    }
-                }
-                */
                 this.Invalidate();
             }
         }
