@@ -361,10 +361,6 @@ namespace PuzzleWin
                 COLOR.FillPath(new SolidBrush(this.color), path);
                 COLOR.FillRectangle(new SolidBrush(this.color), (int)(this.X - tabHeight), (int)(this.Y - tabHeight), (int)(this.Width + tabHeight * 2), (int)(this.Height * tabHeight * 2));
             }
-            public void drawAll(Graphics CANVAS, Graphics COLOR, SizeW SIZE, Image IMG)
-            {
-                    this.draw(CANVAS, COLOR, SIZE, IMG);
-            }
             public bool close()
             {
                 if (distance(new Coord{ X = this.X, Y = this.Y}, new Coord{ X = this.xCorrect, Y = this.yCorrect}) < this.Width/3)
@@ -631,8 +627,8 @@ namespace PuzzleWin
                 randomizePieces();
             }
 
-            for(int i = 0; i < PIECES.Count(); i++)
-                PIECES[i].drawAll(CANVAS, COLOR, SIZE, IMG);
+            for (int i = 0; i < PIECES.Count(); i++)
+                PIECES[i].draw(CANVAS, COLOR, SIZE, IMG);
         }
         public bool isComplete()
         {
