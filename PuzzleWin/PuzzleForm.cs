@@ -7,7 +7,6 @@ namespace PuzzleWin
     public partial class PuzzleForm : Form
     {
         Image IMG;
-        //Image SMIMG;
         Bitmap BMP;
         Graphics COLOR;
         Graphics CANVAS;
@@ -549,15 +548,49 @@ namespace PuzzleWin
                     return;
             }
         }
+        private Image compressImage(string file, int newWidth, int newHeight, int newQuality)
+        {
+            using (Image image = Image.FromFile(file))
+            using (Image memImage = new Bitmap(image, newWidth, newHeight))
+            {
+                ImageCodecInfo myImageCodecInfo;
+                System.Drawing.Imaging.Encoder myEncoder;
+                EncoderParameter myEncoderParameter;
+                EncoderParameters myEncoderParameters;
+                myImageCodecInfo = GetEncoderInfo("image/jpeg");
+                myEncoder = System.Drawing.Imaging.Encoder.Quality;
+                myEncoderParameters = new EncoderParameters(1);
+                myEncoderParameter = new EncoderParameter(myEncoder, newQuality);
+                myEncoderParameters.Param[0] = myEncoderParameter;
 
-        public PuzzleForm(string name, Image img)
+                MemoryStream memStream = new MemoryStream();
+                memImage.Save(memStream, myImageCodecInfo, myEncoderParameters);
+                Image newImage = Image.FromStream(memStream);
+                ImageAttributes imageAttributes = new ImageAttributes();
+                using (Graphics g = Graphics.FromImage(newImage))
+                {
+                    g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                    g.DrawImage(newImage, new Rectangle(Point.Empty, newImage.Size), 0, 0, newImage.Width, newImage.Height, GraphicsUnit.Pixel, imageAttributes);
+                }
+                return newImage;
+            }
+        }
+        private static ImageCodecInfo GetEncoderInfo(String mimeType)
+        {
+            ImageCodecInfo[] encoders;
+            encoders = ImageCodecInfo.GetImageEncoders();
+            foreach (ImageCodecInfo ici in encoders)
+                if (ici.MimeType == mimeType) return ici;
+
+            return null;
+        }
+        public PuzzleForm(string name)
         {
             InitializeComponent();
             FN = name;
             FormBorderStyle = FormBorderStyle.FixedSingle;
             WindowState = FormWindowState.Maximized;
             DoubleBuffered = true;
-            IMG = img;
             SW.Start();
         }
         private void PuzzleForm_Paint(object sender, PaintEventArgs e)
@@ -588,8 +621,8 @@ namespace PuzzleWin
                 TRANSCAN.FillRectangle(new SolidBrush(Color.White), rect);
             TRANSCAN.DrawRectangle(new Pen(Color.Black), (int)SIZE.X - 1, (int)SIZE.Y - 1, (int)SIZE.Width + 2, (int)SIZE.Height + 2);
 
-            SIZE.Rows = 6;
-            SIZE.Columns = 4;
+            SIZE.Rows = 12;
+            SIZE.Columns = 8;
             
             updateCanvas();
 
@@ -616,6 +649,11 @@ namespace PuzzleWin
        */
         private void PuzzleForm_Load(object sender, EventArgs e)
         {
+            Image temp = Image.FromFile(FN);
+            double resizer = 0.8 * Math.Min((double)this.Width / (double)temp.Width, (double)this.Height / (double)temp.Height);
+            Console.WriteLine("Screen size used in conversion: " + this.Width + "x" + this.Height);
+            Console.WriteLine("new image size: " + (int)(resizer * temp.Width) + "x" + (int)(resizer * temp.Height));
+            IMG = compressImage(FN, (int)(resizer * temp.Width), (int)(resizer * temp.Height), 100);
         }
         public static double distance(Coord p1, Coord p2)
         {
