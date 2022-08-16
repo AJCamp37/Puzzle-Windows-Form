@@ -600,16 +600,10 @@ namespace PuzzleWin
             TRANSCAN = e.Graphics;
             COLOR = Graphics.FromImage(BMP);
             COLOR.Clear(Color.Transparent);
-            //IMG = Image.FromFile(FN);
             //GRAPH = e.Graphics;
 
             //DrawGraph();
-            double resizer = SCALER * Math.Min((double)this.Width / (double)IMG.Width, (double)this.Height / (double)IMG.Height);
-            SIZE.Width = resizer * IMG.Width;
-            SIZE.Height = resizer * IMG.Height;
-            SIZE.X = (double)this.Width / 2 - (double)SIZE.Width / 2;
-            SIZE.Y = (double)this.Height / 2 - (double)SIZE.Height / 2;
-
+            
             Rectangle rect = new Rectangle((int)SIZE.X, (int)SIZE.Y, (int)SIZE.Width, (int)SIZE.Height);
             if (BG)
             {
@@ -650,10 +644,13 @@ namespace PuzzleWin
         private void PuzzleForm_Load(object sender, EventArgs e)
         {
             Image temp = Image.FromFile(FN);
-            double resizer = 0.8 * Math.Min((double)this.Width / (double)temp.Width, (double)this.Height / (double)temp.Height);
-            Console.WriteLine("Screen size used in conversion: " + this.Width + "x" + this.Height);
-            Console.WriteLine("new image size: " + (int)(resizer * temp.Width) + "x" + (int)(resizer * temp.Height));
-            IMG = compressImage(FN, (int)(resizer * temp.Width), (int)(resizer * temp.Height), 100);
+            double resizer = SCALER * Math.Min((double)this.Width / (double)temp.Width, (double)this.Height / (double)temp.Height);
+            SIZE.Width = resizer * temp.Width;
+            SIZE.Height = resizer * temp.Height;
+            SIZE.X = (double)this.Width / 2 - (double)SIZE.Width / 2;
+            SIZE.Y = (double)this.Height / 2 - (double)SIZE.Height / 2;
+
+            IMG = compressImage(FN, (int)SIZE.Width, (int)SIZE.Height, 100);
         }
         public static double distance(Coord p1, Coord p2)
         {
