@@ -7,6 +7,7 @@ namespace PuzzleWin
     public partial class PuzzleForm : Form
     {
         Image IMG;
+        //Image SMIMG;
         Bitmap BMP;
         Graphics COLOR;
         Graphics CANVAS;
@@ -549,13 +550,14 @@ namespace PuzzleWin
             }
         }
 
-        public PuzzleForm(string name)
+        public PuzzleForm(string name, Image img)
         {
             InitializeComponent();
             FN = name;
             FormBorderStyle = FormBorderStyle.FixedSingle;
             WindowState = FormWindowState.Maximized;
             DoubleBuffered = true;
+            IMG = img;
             SW.Start();
         }
         private void PuzzleForm_Paint(object sender, PaintEventArgs e)
@@ -565,7 +567,7 @@ namespace PuzzleWin
             TRANSCAN = e.Graphics;
             COLOR = Graphics.FromImage(BMP);
             COLOR.Clear(Color.Transparent);
-            IMG = Image.FromFile(FN);
+            //IMG = Image.FromFile(FN);
             //GRAPH = e.Graphics;
 
             //DrawGraph();
@@ -737,25 +739,21 @@ namespace PuzzleWin
             {
                 PIECES.Remove(piece.leftPiece);
                 PIECES.Add(piece.leftPiece);
-                Console.WriteLine("Removed a left piece");
             }
             if (piece.rightPiece != null)
             {
                 PIECES.Remove(piece.rightPiece);
                 PIECES.Add(piece.rightPiece);
-                Console.WriteLine("Removed a right piece");
             }
             if (piece.topPiece != null)
             {
                 PIECES.Remove(piece.topPiece);
                 PIECES.Add(piece.topPiece);
-                Console.WriteLine("Removed a top piece");
             }
             if (piece.bottomPiece != null)
             {
                 PIECES.Remove(piece.bottomPiece);
                 PIECES.Add(piece.bottomPiece);
-                Console.WriteLine("Removed a bottom piece");
             }
             return;
         }
@@ -819,7 +817,6 @@ namespace PuzzleWin
                     {
                         if(SELECTED_PIECE.closePiece(selectedLeft, 'L', COLORDIC))
                         {
-                            Console.WriteLine("left");
                             SELECTED_PIECE = null;
                             PIECE_SELECTED = false;
                             this.Invalidate();
@@ -838,7 +835,6 @@ namespace PuzzleWin
                     if(selectedRight != SELECTED_PIECE.rightPiece)
                     {
                         if(SELECTED_PIECE.closePiece(selectedRight, 'R', COLORDIC)){
-                            Console.WriteLine("right");
                             SELECTED_PIECE = null;
                             PIECE_SELECTED = false;
                             this.Invalidate();
@@ -858,7 +854,6 @@ namespace PuzzleWin
                     {
                         if(SELECTED_PIECE.closePiece(selectedTop, 'T', COLORDIC))
                         {
-                            Console.WriteLine("top");
                             SELECTED_PIECE = null;
                             PIECE_SELECTED = false;
                             this.Invalidate();
@@ -878,7 +873,6 @@ namespace PuzzleWin
                     {
                         if(SELECTED_PIECE.closePiece(selectedBottom, 'B', COLORDIC))
                         {
-                            Console.WriteLine("bottom");
                             SELECTED_PIECE = null;
                             PIECE_SELECTED = false;
                             this.Invalidate();
