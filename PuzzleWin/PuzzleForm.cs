@@ -12,7 +12,8 @@ namespace PuzzleWin
         Graphics CANVAS;
         Graphics TRANSCAN;
         SizeW SIZE = new SizeW();
-        double SCALER = 0.8;
+        //change scaler to make bigger images fit better on the screen
+        double SCALER = 0.7;
         List<Piece> PIECES = new List<Piece>();
         Dictionary<Color, Piece> COLORDIC = new Dictionary<Color, Piece>();
         bool PIECE_SELECTED = false;
@@ -121,6 +122,15 @@ namespace PuzzleWin
                 this.bottomPiece = null;
                 this.leftPiece = null;
                 this.rightPiece = null;
+            }
+            //remove 
+            public double Xcor
+            {
+                get => xCorrect;
+            }
+            public double Ycor
+            {
+                get => yCorrect;
             }
             public Piece leftPiece
             {
@@ -613,10 +623,8 @@ namespace PuzzleWin
             }
             else
                 TRANSCAN.FillRectangle(new SolidBrush(Color.White), rect);
-            TRANSCAN.DrawRectangle(new Pen(Color.Black), (int)SIZE.X - 1, (int)SIZE.Y - 1, (int)SIZE.Width + 2, (int)SIZE.Height + 2);
+            TRANSCAN.DrawRectangle(new Pen(Color.Black, 1F), (int)SIZE.X - 1, (int)SIZE.Y - 1, (int)SIZE.Width + 1, (int)SIZE.Height + 1);
 
-            SIZE.Rows = 12;
-            SIZE.Columns = 8;
             
             updateCanvas();
 
@@ -645,12 +653,16 @@ namespace PuzzleWin
         {
             Image temp = Image.FromFile(FN);
             double resizer = SCALER * Math.Min((double)this.Width / (double)temp.Width, (double)this.Height / (double)temp.Height);
-            SIZE.Width = resizer * temp.Width;
-            SIZE.Height = resizer * temp.Height;
+            SIZE.Width = Math.Ceiling(resizer * temp.Width);
+            SIZE.Height = Math.Ceiling(resizer * temp.Height);
             SIZE.X = (double)this.Width / 2 - (double)SIZE.Width / 2;
             SIZE.Y = (double)this.Height / 2 - (double)SIZE.Height / 2;
+            SIZE.Rows = 4;
+            SIZE.Columns = 4;
 
             IMG = compressImage(FN, (int)SIZE.Width, (int)SIZE.Height, 100);
+            Console.WriteLine(SIZE.Width + "x" + SIZE.Height);
+            Console.WriteLine("piece width: " + (SIZE.Width / SIZE.Columns) + " height: " + (SIZE.Height / SIZE.Rows));
         }
         public static double distance(Coord p1, Coord p2)
         {
@@ -989,6 +1001,16 @@ namespace PuzzleWin
             else
                 menuShowPic.Text = "Hide Picture";
             BG = !BG;
+            this.Invalidate();
+        }
+        //remove
+        private void menuComplete_Click(object sender, EventArgs e)
+        {
+            foreach(Piece piece in PIECES)
+            {
+                piece.X = piece.Xcor;
+                piece.Y = piece.Ycor;
+            }
             this.Invalidate();
         }
     }
