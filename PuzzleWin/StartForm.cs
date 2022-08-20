@@ -13,7 +13,7 @@ namespace PuzzleWin
 {
     public partial class StartForm : Form
     {
-        string FN;
+        string FN = "";
         public StartForm()
         {
             InitializeComponent();
