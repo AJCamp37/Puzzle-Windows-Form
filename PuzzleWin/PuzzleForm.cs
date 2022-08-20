@@ -98,10 +98,14 @@ namespace PuzzleWin
             private double right;
             private Color _color;
             private bool moveable;
-            private Piece _leftPiece;
-            private Piece _rightPiece;
-            private Piece _bottomPiece;
-            private Piece _topPiece;
+            private Piece? _leftPiece;
+            private Piece? _rightPiece;
+            private Piece? _bottomPiece;
+            private Piece? _topPiece;
+            private Point leftCheck; 
+            private Point rightCheck; 
+            private Point topCheck; 
+            private Point bottomCheck; 
 
             public Piece(int rowIndex, int columnIndex, SizeW SIZE, Color color)
             {
@@ -118,10 +122,14 @@ namespace PuzzleWin
                 this.offsetY = 0;
                 this._color = color;
                 this.moveable = true;
-                this.topPiece = null;
-                this.bottomPiece = null;
-                this.leftPiece = null;
-                this.rightPiece = null;
+                this._topPiece = null;
+                this._bottomPiece = null;
+                this._leftPiece = null;
+                this._rightPiece = null;
+                this.leftCheck = new Point(-1, -1);
+                this.rightCheck = new Point(-1, -1);
+                this.topCheck = new Point(-1, -1);
+                this.bottomCheck = new Point(-1, -1);
             }
             //remove 
             public double Xcor
@@ -216,6 +224,26 @@ namespace PuzzleWin
                 get => moveable;
                 set { moveable = value;}
             }
+            public Point LeftCheck
+            {
+                get => leftCheck;
+                set { leftCheck = value; }
+            }
+            public Point RightCheck
+            {
+                get => rightCheck;
+                set { rightCheck = value; }
+            }
+            public Point TopCheck
+            {
+                get => topCheck;
+                set { topCheck = value; }
+            }
+            public Point BottomCheck
+            {
+                get => bottomCheck;
+                set { bottomCheck = value; }
+            }
             public void draw(Graphics CANVAS, Graphics COLOR, SizeW SIZE, Image IMG)
             {
                 Pen pen = new Pen(Color.Transparent);
@@ -227,7 +255,6 @@ namespace PuzzleWin
                 double neck = 0.1 * sz;
                 double tabWidth = 0.2 * sz;
                 double tabHeight = 0.2 * sz;
-                
 
                 double scaledTabHeight = Math.Min(IMG.Width / SIZE.Columns,
                     IMG.Height / SIZE.Rows) * tabHeight / sz;
@@ -261,6 +288,7 @@ namespace PuzzleWin
                     temp3.X = (int)(this.X + this.Width * Math.Abs(this.Top) + tabWidth);
 
                     path.AddBezier(temp4, temp3, temp2, temp1);
+                    this.TopCheck = temp4;
                 }
                 else
                     path.AddLine(startP, new Point((int)(this.X + this.Width), (int)this.Y));
@@ -288,6 +316,7 @@ namespace PuzzleWin
                     temp3.Y = (int)(this.Y + this.Height * Math.Abs(this.Right) + tabWidth);
 
                     path.AddBezier(temp4, temp3, temp2, temp1);
+                    this.RightCheck = temp4;
                 }
                 else
                     path.AddLine(
@@ -317,6 +346,7 @@ namespace PuzzleWin
                     temp3.X = (int)(this.X + this.Width * Math.Abs(this.Bottom) - tabWidth);
 
                     path.AddBezier(temp4, temp3, temp2, temp1);
+                    this.BottomCheck = temp4;
                 }
                 else
                     path.AddLine(
@@ -347,6 +377,7 @@ namespace PuzzleWin
 
                     path.AddBezier(temp4, temp3, temp2, temp1);
                     path.AddLine(temp1, startP);
+                    this.LeftCheck = temp4;
                 }
                 else
                     path.AddLine(
@@ -435,7 +466,9 @@ namespace PuzzleWin
             {
                 if(dir == 'L')
                 {
-                    if (this.Left == -piece.Right)
+                    if (this.Left == -piece.Right && 
+                       (this.LeftCheck.X == piece.RightCheck.X || this.LeftCheck.X == piece.RightCheck.X + 1 || this.LeftCheck.X == piece.RightCheck.X - 1) && 
+                       (this.LeftCheck.Y == piece.RightCheck.Y || this.LeftCheck.Y == piece.RightCheck.Y + 1 || this.LeftCheck.Y == piece.RightCheck.Y - 1))
                     {
                         this.connect(piece, COLORDIC);
                         return true;
@@ -443,7 +476,9 @@ namespace PuzzleWin
                 }
                 else if(dir == 'R')
                 {
-                    if (this.Right == -piece.Left)
+                    if (this.Right == -piece.Left &&
+                        (this.RightCheck.X == piece.LeftCheck.X || this.RightCheck.X == piece.LeftCheck.X + 1 || this.RightCheck.X == piece.LeftCheck.X - 1) && 
+                        (this.RightCheck.X == piece.LeftCheck.X || this.RightCheck.X == piece.LeftCheck.X + 1 || this.RightCheck.X == piece.LeftCheck.X - 1))
                     {
                         this.connect(piece, COLORDIC);
                         return true;
@@ -451,7 +486,9 @@ namespace PuzzleWin
                 }
                 else if(dir == 'T')
                 {
-                    if (this.Top == -piece.Bottom)
+                    if (this.Top == -piece.Bottom && 
+                        (this.TopCheck.X == piece.BottomCheck.X || this.TopCheck.X == piece.BottomCheck.X + 1 || this.TopCheck.X == piece.BottomCheck.X - 1) &&
+                        (this.TopCheck.Y == piece.BottomCheck.Y || this.TopCheck.Y == piece.BottomCheck.Y + 1 || this.TopCheck.Y == piece.BottomCheck.Y - 1))
                     {
                         this.connect(piece, COLORDIC);
                         return true;
@@ -459,7 +496,9 @@ namespace PuzzleWin
                 }
                 else
                 {
-                    if (this.Bottom == -piece.Top)
+                    if (this.Bottom == -piece.Top && 
+                        (this.BottomCheck.X == piece.TopCheck.X || this.BottomCheck.X == piece.TopCheck.X + 1 || this.BottomCheck.X == piece.TopCheck.X - 1) &&
+                        (this.BottomCheck.Y == piece.TopCheck.Y || this.BottomCheck.Y == piece.TopCheck.Y + 1 || this.BottomCheck.Y == piece.TopCheck.Y - 1))
                     {
                         this.connect(piece, COLORDIC);
                         return true;
@@ -652,13 +691,20 @@ namespace PuzzleWin
         private void PuzzleForm_Load(object sender, EventArgs e)
         {
             Image temp = Image.FromFile(FN);
+            SIZE.Rows = 9;
+            SIZE.Columns = 6;
             double resizer = SCALER * Math.Min((double)this.Width / (double)temp.Width, (double)this.Height / (double)temp.Height);
-            SIZE.Width = Math.Ceiling(resizer * temp.Width);
-            SIZE.Height = Math.Ceiling(resizer * temp.Height);
+            if(SIZE.Rows % 2 == 0)
+                SIZE.Height = resizer * temp.Height;
+            else
+                SIZE.Height = Math.Ceiling(resizer * temp.Height);
+            if(SIZE.Columns % 2 == 0)
+                SIZE.Width = resizer * temp.Width;
+            else
+                SIZE.Width = Math.Ceiling(resizer * temp.Width);
+
             SIZE.X = (double)this.Width / 2 - (double)SIZE.Width / 2;
             SIZE.Y = (double)this.Height / 2 - (double)SIZE.Height / 2;
-            SIZE.Rows = 4;
-            SIZE.Columns = 4;
 
             IMG = compressImage(FN, (int)SIZE.Width, (int)SIZE.Height, 100);
             Console.WriteLine(SIZE.Width + "x" + SIZE.Height);
@@ -852,82 +898,85 @@ namespace PuzzleWin
             }
             else if(SELECTED_PIECE != null)
             {
-                //add trys to these
-                Color tryPiece = BMP.GetPixel((int)(SELECTED_PIECE.X-5), (int)(SELECTED_PIECE.Y+5));
-
-                if(tryPiece.A == 0)
-                    tryPiece = BMP.GetPixel((int)(SELECTED_PIECE.X-5), (int)(SELECTED_PIECE.Y-5));
-                if(tryPiece.A != 0)
+                if(SELECTED_PIECE.LeftCheck.X >= 0 && SELECTED_PIECE.LeftCheck.X <= this.Width && SELECTED_PIECE.LeftCheck.Y >= 0 && SELECTED_PIECE.LeftCheck.Y <= this.Height)
                 {
-                    Piece selectedLeft = COLORDIC[tryPiece];
-                    if(selectedLeft != SELECTED_PIECE.leftPiece)
+                    Color tryLeft = BMP.GetPixel(SELECTED_PIECE.LeftCheck.X-1, SELECTED_PIECE.LeftCheck.Y);
+                    
+                    if(tryLeft.A != 0)
                     {
-                        if(SELECTED_PIECE.closePiece(selectedLeft, 'L', COLORDIC))
+                        Piece selectedLeft = COLORDIC[tryLeft];
+                        if(selectedLeft != SELECTED_PIECE.leftPiece)
                         {
-                            SELECTED_PIECE = null;
-                            PIECE_SELECTED = false;
-                            this.Invalidate();
-                            return;
+                            if(SELECTED_PIECE.closePiece(selectedLeft, 'L', COLORDIC))
+                            {
+                                SELECTED_PIECE = null;
+                                PIECE_SELECTED = false;
+                                this.Invalidate();
+                                return;
+                            }
                         }
                     }
+    
                 }
-
-                tryPiece = BMP.GetPixel((int)(SELECTED_PIECE.X + SELECTED_PIECE.Width + 5), (int)(SELECTED_PIECE.Y + 5));
-
-                if(tryPiece.A == 0)
-                    tryPiece = BMP.GetPixel((int)(SELECTED_PIECE.X + SELECTED_PIECE.Width + 5), (int)(SELECTED_PIECE.Y - 5));
-                if(tryPiece.A != 0)
+                if(SELECTED_PIECE.RightCheck.X >= 0 && SELECTED_PIECE.RightCheck.X <= this.Width && SELECTED_PIECE.RightCheck.Y >= 0 && SELECTED_PIECE.RightCheck.Y <= this.Height)
                 {
-                    Piece selectedRight = COLORDIC[tryPiece];
-                    if(selectedRight != SELECTED_PIECE.rightPiece)
-                    {
-                        if(SELECTED_PIECE.closePiece(selectedRight, 'R', COLORDIC)){
-                            SELECTED_PIECE = null;
-                            PIECE_SELECTED = false;
-                            this.Invalidate();
-                            return;
-                        }
-                    }
-                }
+                    Color tryRight = BMP.GetPixel(SELECTED_PIECE.RightCheck.X+1, SELECTED_PIECE.RightCheck.Y);
 
-                tryPiece = BMP.GetPixel((int)(SELECTED_PIECE.X + 5), (int)(SELECTED_PIECE.Y - 5));
-
-                if(tryPiece.A == 0)
-                    tryPiece = BMP.GetPixel((int)(SELECTED_PIECE.X - 5), (int)(SELECTED_PIECE.Y - 5));
-                if(tryPiece.A != 0)
-                {
-                    Piece selectedTop = COLORDIC[tryPiece];
-                    if(selectedTop != SELECTED_PIECE.topPiece)
+                    if(tryRight.A != 0)
                     {
-                        if(SELECTED_PIECE.closePiece(selectedTop, 'T', COLORDIC))
+                        Piece selectedRight = COLORDIC[tryRight];
+                        if(selectedRight != SELECTED_PIECE.rightPiece)
                         {
-                            SELECTED_PIECE = null;
-                            PIECE_SELECTED = false;
-                            this.Invalidate();
-                            return;
+                            if(SELECTED_PIECE.closePiece(selectedRight, 'R', COLORDIC)){
+                                SELECTED_PIECE = null;
+                                PIECE_SELECTED = false;
+                                this.Invalidate();
+                                return;
+                            }
                         }
                     }
                 }
-
-                tryPiece = BMP.GetPixel((int)(SELECTED_PIECE.X + 5), (int)(SELECTED_PIECE.Y + SELECTED_PIECE.Height + 5));
-
-                if(tryPiece.A == 0)
-                    tryPiece = BMP.GetPixel((int)(SELECTED_PIECE.X - 5), (int)(SELECTED_PIECE.Y + SELECTED_PIECE.Height + 5));
-                if(tryPiece.A != 0)
+                
+                if(SELECTED_PIECE.TopCheck.X >= 0 && SELECTED_PIECE.TopCheck.X <= this.Width && SELECTED_PIECE.TopCheck.Y >= 0 && SELECTED_PIECE.TopCheck.Y <= this.Height)
                 {
-                    Piece selectedBottom = COLORDIC[tryPiece];
-                    if(selectedBottom != SELECTED_PIECE.bottomPiece)
+                    Color tryTop = BMP.GetPixel(SELECTED_PIECE.TopCheck.X, SELECTED_PIECE.TopCheck.Y-1);
+
+                    if(tryTop.A != 0)
                     {
-                        if(SELECTED_PIECE.closePiece(selectedBottom, 'B', COLORDIC))
+                        Piece selectedTop = COLORDIC[tryTop];
+                        if(selectedTop != SELECTED_PIECE.topPiece)
                         {
-                            SELECTED_PIECE = null;
-                            PIECE_SELECTED = false;
-                            this.Invalidate();
-                            return;
+                            if(SELECTED_PIECE.closePiece(selectedTop, 'T', COLORDIC))
+                            {
+                                SELECTED_PIECE = null;
+                                PIECE_SELECTED = false;
+                                this.Invalidate();
+                                return;
+                            }
                         }
                     }
                 }
-            }
+
+                if(SELECTED_PIECE.BottomCheck.X >= 0 && SELECTED_PIECE.BottomCheck.X <= this.Width && SELECTED_PIECE.BottomCheck.Y >= 0 && SELECTED_PIECE.BottomCheck.Y <= this.Height)
+                {
+                    Color tryBottom = BMP.GetPixel(SELECTED_PIECE.BottomCheck.X, SELECTED_PIECE.BottomCheck.Y+1);
+
+                    if(tryBottom.A != 0)
+                    {
+                        Piece selectedBottom = COLORDIC[tryBottom];
+                        if(selectedBottom != SELECTED_PIECE.bottomPiece)
+                        {
+                            if(SELECTED_PIECE.closePiece(selectedBottom, 'B', COLORDIC))
+                            {
+                                SELECTED_PIECE = null;
+                                PIECE_SELECTED = false;
+                                this.Invalidate();
+                                return;
+                            }
+                        }
+                    }
+                }
+           }
             SELECTED_PIECE = null;
             PIECE_SELECTED = false;
         }
