@@ -15,6 +15,7 @@ namespace PuzzleWin
         //change scaler to make bigger images fit better on the screen
         double SCALER = 0.7;
         List<Piece> PIECES = new List<Piece>();
+        List<Piece> COMPLETED_PIECES = new List<Piece>();
         Dictionary<Color, Piece> COLORDIC = new Dictionary<Color, Piece>();
         bool PIECE_SELECTED = false;
         Piece SELECTED_PIECE;
@@ -408,12 +409,14 @@ namespace PuzzleWin
                     return true;
                 return false;
             }
-            private void snapAll( Piece piece, List<Piece> visited)
+            private void snapAll( Piece piece, List<Piece> visited, List<Piece> PIECES, List<Piece> completed)
             {
                 if (visited.Contains(piece))
                     return;
 
                 visited.Add(piece);
+                completed.Add(piece);
+                PIECES.Remove(piece);
 
                 if(piece.leftPiece != null)
                 {
@@ -422,7 +425,7 @@ namespace PuzzleWin
                     piece.leftPiece.moveable = false;
                     piece.leftPiece.correct = true;
 
-                    this.snapAll(piece.leftPiece, visited);
+                    this.snapAll(piece.leftPiece, visited, PIECES, completed);
                 }
                 if(piece.rightPiece != null)
                 {
@@ -431,7 +434,7 @@ namespace PuzzleWin
                     piece.rightPiece.moveable = false;
                     piece.rightPiece.correct = true;
 
-                    this.snapAll(piece.rightPiece, visited);
+                    this.snapAll(piece.rightPiece, visited, PIECES, completed);
                 }
                 if(piece.topPiece != null)
                 {
@@ -440,7 +443,7 @@ namespace PuzzleWin
                     piece.topPiece.moveable = false;
                     piece.topPiece.correct = true;
 
-                    this.snapAll(piece.topPiece, visited);
+                    this.snapAll(piece.topPiece, visited, PIECES, completed);
                 }
                 if(piece.bottomPiece != null)
                 {
@@ -449,18 +452,18 @@ namespace PuzzleWin
                     piece.bottomPiece.moveable = false;
                     piece.bottomPiece.correct = true;
                     
-                    this.snapAll(piece.bottomPiece, visited);
+                    this.snapAll(piece.bottomPiece, visited, PIECES, completed);
                 }
                 return;
             }
-            public void snap()
+            public void snap(List<Piece> PIECES, List<Piece> completed)
             {
                 this.X = this.xCorrect;
                 this.Y = this.yCorrect;
                 this.isCorrect = true;
                 this.moveable = false;
 
-                this.snapAll(this, new List<Piece>());
+                this.snapAll(this, new List<Piece>(), PIECES, completed);
             }
             public bool closePiece( Piece piece, char dir, Dictionary<Color, Piece> COLORDIC)
             {
@@ -691,8 +694,8 @@ namespace PuzzleWin
         private void PuzzleForm_Load(object sender, EventArgs e)
         {
             Image temp = Image.FromFile(FN);
-            SIZE.Rows = 9;
-            SIZE.Columns = 6;
+            SIZE.Rows = 2;
+            SIZE.Columns = 2;
             double resizer = SCALER * Math.Min((double)this.Width / (double)temp.Width, (double)this.Height / (double)temp.Height);
             if(SIZE.Rows % 2 == 0)
                 SIZE.Height = resizer * temp.Height;
@@ -716,23 +719,34 @@ namespace PuzzleWin
         }
         public void updateCanvas()
         {
-            if(PIECES.Count == 0)
+            if(PIECES.Count == 0 && COMPLETED_PIECES.Count == 0)
             {
                 initializePieces();
                 randomizePieces();
             }
 
-            for (int i = 0; i < PIECES.Count(); i++)
+            if(COMPLETED_PIECES.Count != 0)
+            {
+                for (int i = 0; i < COMPLETED_PIECES.Count; i++)
+                    COMPLETED_PIECES[i].draw(CANVAS, COLOR, SIZE, IMG);
+            }
+
+            for (int i = 0; i < PIECES.Count; i++)
                 PIECES[i].draw(CANVAS, COLOR, SIZE, IMG);
         }
         public bool isComplete()
         {
+            /*
             for(int i = 0; i < PIECES.Count; i++)
             {
                 if (!PIECES[i].isCorrect)
                     return false;
             }
-            return true;
+            */
+            if (PIECES.Count == 0)
+                return true;
+            else
+                return false;
         }
         public void initializePieces()
         {
@@ -883,7 +897,7 @@ namespace PuzzleWin
         {
             if (SELECTED_PIECE != null && SELECTED_PIECE.close())
             {
-                SELECTED_PIECE.snap();
+                SELECTED_PIECE.snap(PIECES, COMPLETED_PIECES);
                 this.Invalidate();
                 if (isComplete())
                 {
