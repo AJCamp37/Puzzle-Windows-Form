@@ -14,6 +14,7 @@ namespace PuzzleWin
     public partial class StartForm : Form
     {
         string FN = "";
+        string FT = "";
         public StartForm()
         {
             InitializeComponent();
@@ -26,13 +27,13 @@ namespace PuzzleWin
             if(FN != null)
             {
                 
-                PuzzleForm form1 = new PuzzleForm(FN);
+                PuzzleForm form1 = new PuzzleForm(FN, FT);
                 this.Hide();
                 form1.Show();
             }
         }
        
-        private void btnLoad_Click(object sender, EventArgs e)
+        private void btnLoadImage_Click(object sender, EventArgs e)
         {
             openFileDialog1.ShowDialog();
             FN = openFileDialog1.FileName;
@@ -40,6 +41,20 @@ namespace PuzzleWin
                btnStart.Enabled = true;
             else
                 btnStart.Enabled = false;
+
+            FT = "IMG";
+        }
+        
+        private void btnLoadSave_Click(object sender, EventArgs e)
+        {
+            openFileDialog2.ShowDialog();
+            FN = openFileDialog2.FileName;
+            if (FN != "")
+                btnStart.Enabled = true;
+            else
+                btnStart.Enabled = false;
+
+            FT = "SF";
         }
     }
 }

@@ -35,8 +35,9 @@
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.menuPause = new System.Windows.Forms.ToolStripMenuItem();
             this.menuShowPic = new System.Windows.Forms.ToolStripMenuItem();
-            this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.menuComplete = new System.Windows.Forms.ToolStripMenuItem();
+            this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
+            this.menuSave = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -70,23 +71,31 @@
             this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuPause,
             this.menuShowPic,
-            this.menuComplete});
+            this.menuComplete,
+            this.menuSave});
             this.contextMenuStrip.Name = "contextMenuStrip";
-            this.contextMenuStrip.Size = new System.Drawing.Size(144, 70);
+            this.contextMenuStrip.Size = new System.Drawing.Size(181, 114);
             // 
             // menuPause
             // 
             this.menuPause.Name = "menuPause";
-            this.menuPause.Size = new System.Drawing.Size(143, 22);
+            this.menuPause.Size = new System.Drawing.Size(180, 22);
             this.menuPause.Text = "Pause";
             this.menuPause.Click += new System.EventHandler(this.Pause_OnClick);
             // 
             // menuShowPic
             // 
             this.menuShowPic.Name = "menuShowPic";
-            this.menuShowPic.Size = new System.Drawing.Size(143, 22);
+            this.menuShowPic.Size = new System.Drawing.Size(180, 22);
             this.menuShowPic.Text = "Show Picture";
             this.menuShowPic.Click += new System.EventHandler(this.ShowPic_OnClick);
+            // 
+            // menuComplete
+            // 
+            this.menuComplete.Name = "menuComplete";
+            this.menuComplete.Size = new System.Drawing.Size(180, 22);
+            this.menuComplete.Text = "complete";
+            this.menuComplete.Click += new System.EventHandler(this.menuComplete_Click);
             // 
             // notifyIcon
             // 
@@ -95,12 +104,11 @@
             this.notifyIcon.Text = "Resume Puzzle";
             this.notifyIcon.DoubleClick += new System.EventHandler(this.notifyIcon_DoubleClick);
             // 
-            // menuComplete
+            // menuSave
             // 
-            this.menuComplete.Name = "menuComplete";
-            this.menuComplete.Size = new System.Drawing.Size(143, 22);
-            this.menuComplete.Text = "complete";
-            this.menuComplete.Click += new System.EventHandler(this.menuComplete_Click);
+            this.menuSave.Name = "menuSave";
+            this.menuSave.Size = new System.Drawing.Size(180, 22);
+            this.menuSave.Text = "Save";
             // 
             // PuzzleForm
             // 
@@ -133,5 +141,6 @@
         private NotifyIcon notifyIcon;
         private ToolStripMenuItem menuShowPic;
         private ToolStripMenuItem menuComplete;
+        private ToolStripMenuItem menuSave;
     }
 }

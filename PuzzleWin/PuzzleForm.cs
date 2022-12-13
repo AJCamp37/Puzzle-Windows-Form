@@ -44,11 +44,22 @@ namespace PuzzleWin
 
             return null;
         }
-        public PuzzleForm(string name)
+        public PuzzleForm(string name, string loadType)
         {
             InitializeComponent();
-            this.puzzle = new Puzzle(0.7, name);
+            if(loadType == "IMG")
+                this.puzzle = new Puzzle(0.7, name);
+            else
+            {
+                /////////////////////////////////
+                //Load Puzzle pieces into puzzle
+            }
             FormBorderStyle = FormBorderStyle.FixedSingle;
+            /*
+            Left = Top = 0;
+            Width = Screen.PrimaryScreen.WorkingArea.Width;
+            Height = Screen.PrimaryScreen.WorkingArea.Height;
+            */
             WindowState = FormWindowState.Maximized;
             DoubleBuffered = true;
             puzzle.SW.Start();
@@ -103,8 +114,8 @@ namespace PuzzleWin
         {
 
             Image temp = Image.FromFile(puzzle.FN);
-            puzzle.SIZE.Rows = 2;
-            puzzle.SIZE.Columns = 2;
+            puzzle.SIZE.Rows = 20;
+            puzzle.SIZE.Columns = 20;
             double resizer = puzzle.SCALER * Math.Min((double)this.Width / (double)temp.Width, (double)this.Height / (double)temp.Height);
             if(puzzle.SIZE.Rows % 2 == 0)
                 puzzle.SIZE.Height = resizer * temp.Height;
@@ -119,8 +130,6 @@ namespace PuzzleWin
             puzzle.SIZE.Y = (double)this.Height / 2 - (double)puzzle.SIZE.Height / 2;
 
             puzzle.IMG = compressImage(puzzle.FN, (int)puzzle.SIZE.Width, (int)puzzle.SIZE.Height, 100);
-            Console.WriteLine(puzzle.SIZE.Width + "x" + puzzle.SIZE.Height);
-            Console.WriteLine("piece width: " + (puzzle.SIZE.Width / puzzle.SIZE.Columns) + " height: " + (puzzle.SIZE.Height / puzzle.SIZE.Rows));
         }
         public void updateCanvas()
         {
@@ -223,10 +232,42 @@ namespace PuzzleWin
         {
             double tabWidth = Math.Min(puzzle.PIECES[0].Width, puzzle.PIECES[0].Height) * 0.2;
             Random rnd = new Random();
+            Rectangle frameRect = new Rectangle((int)puzzle.SIZE.X, (int)puzzle.SIZE.Y, (int)puzzle.SIZE.Width, (int)puzzle.SIZE.Height);
+            Rectangle screenRect = Screen.GetWorkingArea(new Point(0,0));
+            Console.WriteLine(this.Width + " " + this.Height);
+            Console.WriteLine(screenRect.Width + " " + screenRect.Height);
             for(int i = 0; i < puzzle.PIECES.Count; i++)
             {
-                var loc = new {x = rnd.NextDouble() * (this.Width - puzzle.PIECES[i].Width),
-                    y = rnd.NextDouble() * (this.Height - puzzle.PIECES[i].Height)};
+                var loc = new {x = rnd.NextDouble() * (this.Width - puzzle.PIECES[i].Width - tabWidth),
+                    y = rnd.NextDouble() * (this.Height - puzzle.PIECES[i].Height - tabWidth)};
+
+                while(frameRect.Contains(new Point((int)loc.x, (int)loc.y)))
+                {
+                    loc = new {x = rnd.NextDouble() * (this.Width - puzzle.PIECES[i].Width - tabWidth),
+                        y = rnd.NextDouble() * (this.Height - puzzle.PIECES[i].Height - tabWidth)};
+                }
+                if(loc.x <= puzzle.SIZE.X && loc.x + puzzle.PIECES[i].Width > puzzle.SIZE.X)
+                    loc = new { x = loc.x - puzzle.PIECES[i].Width - tabWidth, y = loc.y };
+
+                /*
+                if (loc.y + puzzle.PIECES[i].Height >= screenRect.Height)
+                {
+                    Console.WriteLine("here");
+                    loc = new { x = loc.x, y = loc.y - puzzle.PIECES[i].Height - tabWidth };
+                }
+                */
+                /*
+                if(!screenRect.Contains(new Point((int)(loc.x + puzzle.PIECES[i].Width), (int)(loc.y + puzzle.PIECES[i].Height))))
+                {
+                    if (loc.x + puzzle.PIECES[i].Width > this.Width)
+                        loc = new { x = loc.x - puzzle.PIECES[i].Width - tabWidth, y = loc.y };
+                    if (loc.y + puzzle.PIECES[i].Height > this.Height)
+                        loc = new { x = loc.x, y = loc.y - puzzle.PIECES[i].Height - tabWidth};
+                }
+                */
+
+
+                /*
                 if(loc.x < puzzle.SIZE.X && loc.x > puzzle.SIZE.X - puzzle.PIECES[i].Width - tabWidth)
                     loc = new {x = loc.x - puzzle.PIECES[i].Width - tabWidth, y = loc.y};
                 else if (loc.x > puzzle.SIZE.X && loc.x <= puzzle.SIZE.X + (puzzle.SIZE.Width / 2))
@@ -235,6 +276,7 @@ namespace PuzzleWin
                     loc = new {x = loc.x + puzzle.PIECES[i].Width + tabWidth, y = loc.y};
                 else if(loc.x > puzzle.SIZE.X + puzzle.SIZE.Width && loc.x < puzzle.SIZE.X + puzzle.PIECES[i].Width + tabWidth)
                     loc = new { x = loc.x + (puzzle.PIECES[i].Width/2) + tabWidth, y = loc.y };
+                */
 
                 puzzle.PIECES[i].X = loc.x;
                 puzzle.PIECES[i].Y = loc.y;
@@ -460,6 +502,7 @@ namespace PuzzleWin
             notifyIcon.Visible = false;
             puzzle.SW.Start();
         }
+        //remove
         private void ShowPic_OnClick(object sender, EventArgs e)
         {
             if (puzzle.BG)
@@ -471,7 +514,6 @@ namespace PuzzleWin
             puzzle.BG = !puzzle.BG;
             this.Invalidate();
         }
-        //remove
         private void menuComplete_Click(object sender, EventArgs e)
         {
             foreach(Piece piece in puzzle.PIECES)
