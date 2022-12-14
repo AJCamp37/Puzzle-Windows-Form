@@ -62,7 +62,10 @@ namespace PuzzleWin
             */
             WindowState = FormWindowState.Maximized;
             DoubleBuffered = true;
-            puzzle.SW.Start();
+            this.SetStyle(ControlStyles.OptimizedDoubleBuffer,  true);
+            Cursor.Clip = new Rectangle(this.Location, this.Size);
+
+            puzzle!.SW.Start();
         }
         private void PuzzleForm_Paint(object sender, PaintEventArgs e)
         {
@@ -81,6 +84,9 @@ namespace PuzzleWin
                 puzzle.TRANSCAN.DrawImage(puzzle.IMG, (int)puzzle.SIZE.X, (int)puzzle.SIZE.Y, (int)puzzle.SIZE.Width, (int)puzzle.SIZE.Height);
                 Brush opq = new SolidBrush(Color.FromArgb(150, 255, 255, 255));
                 puzzle.TRANSCAN.FillRectangle(opq, rect);
+
+                //Release brush
+                opq.Dispose();
             }
             else
                 puzzle.TRANSCAN.FillRectangle(new SolidBrush(Color.White), rect);
@@ -114,8 +120,8 @@ namespace PuzzleWin
         {
 
             Image temp = Image.FromFile(puzzle.FN);
-            puzzle.SIZE.Rows = 20;
-            puzzle.SIZE.Columns = 20;
+            puzzle.SIZE.Rows = 10;
+            puzzle.SIZE.Columns = 10;
             double resizer = puzzle.SCALER * Math.Min((double)this.Width / (double)temp.Width, (double)this.Height / (double)temp.Height);
             if(puzzle.SIZE.Rows % 2 == 0)
                 puzzle.SIZE.Height = resizer * temp.Height;
@@ -313,7 +319,11 @@ namespace PuzzleWin
         }
         private void PuzzleForm_MouseDown(object sender, MouseEventArgs e)
         {
+            //Get pixel color of clicked pixel
             Color clicked = puzzle.BMP.GetPixel(e.X, e.Y);
+            
+            //if you pixel clicked is transparent there's no piece there so nothing is selected
+            //else select piece
             if (clicked.A == 0)
             {
                 puzzle.SELECTED_PIECE = null;
@@ -321,7 +331,11 @@ namespace PuzzleWin
             }
             else
             {
+                //Set selected piece based off it's color in the COLORDIC 
                 puzzle.SELECTED_PIECE = puzzle.COLORDIC[clicked];
+                //If the piece is locked in place already unselect the piece
+                //Else remove the piece(s) from the PIECES array and add it back to the end so the piece(s) will be drawn above all other pieces
+                //Set the offset for the piece
                 if (!puzzle.SELECTED_PIECE.Moveable)
                 {
                     puzzle.SELECTED_PIECE = null;
@@ -329,8 +343,10 @@ namespace PuzzleWin
                 }
                 else
                 {
+                    //Hide cursor so the piece lag behind cursor isn't so jarring
+                    Cursor.Hide();
+
                     puzzle.PIECE_SELECTED = true;
-                    //int i = PIECES.IndexOf(SELECTED_PIECE);
                     puzzle.PIECES.Remove(puzzle.SELECTED_PIECE);
                     puzzle.PIECES.Add(puzzle.SELECTED_PIECE);
                     removePieces(puzzle.SELECTED_PIECE, new List<Piece>());
@@ -338,10 +354,15 @@ namespace PuzzleWin
                     puzzle.SELECTED_PIECE.OffsetY = e.Y - puzzle.SELECTED_PIECE.Y;
                 }
             }
+            //Redraw canvas
             this.Invalidate();
         }
         private void PuzzleForm_MouseUp(object sender, MouseEventArgs e)
         {
+            //Show the cursor again
+            Cursor.Show();
+            //If there's a piece selected check if the piece should be snapped in place on the board 
+            //Else if there's a piece selected check around the piece to see if any of it's sides should be snapped to another piece
             if (puzzle.SELECTED_PIECE != null && puzzle.SELECTED_PIECE.close())
             {
                 puzzle.SELECTED_PIECE.snap(puzzle.PIECES, puzzle.COMPLETED_PIECES);
@@ -397,7 +418,6 @@ namespace PuzzleWin
                         }
                     }
                 }
-                
                 if(puzzle.SELECTED_PIECE.TopCheck.X >= 0 && puzzle.SELECTED_PIECE.TopCheck.X <= this.Width && puzzle.SELECTED_PIECE.TopCheck.Y >= 0 && puzzle.SELECTED_PIECE.TopCheck.Y <= this.Height)
                 {
                     Color tryTop = puzzle.BMP.GetPixel(puzzle.SELECTED_PIECE.TopCheck.X, puzzle.SELECTED_PIECE.TopCheck.Y-1);
@@ -417,7 +437,6 @@ namespace PuzzleWin
                         }
                     }
                 }
-
                 if(puzzle.SELECTED_PIECE.BottomCheck.X >= 0 && puzzle.SELECTED_PIECE.BottomCheck.X <= this.Width && puzzle.SELECTED_PIECE.BottomCheck.Y >= 0 && puzzle.SELECTED_PIECE.BottomCheck.Y <= this.Height)
                 {
                     Color tryBottom = puzzle.BMP.GetPixel(puzzle.SELECTED_PIECE.BottomCheck.X, puzzle.SELECTED_PIECE.BottomCheck.Y+1);
@@ -438,6 +457,8 @@ namespace PuzzleWin
                     }
                 }
            }
+
+            //Unselect puzzle piece
             puzzle.SELECTED_PIECE = null;
             puzzle.PIECE_SELECTED = false;
         }
@@ -445,11 +466,10 @@ namespace PuzzleWin
         {
             if(puzzle.PIECE_SELECTED)
             {
-                //if you wanna move multiple pieces at once do it here
                 puzzle.SELECTED_PIECE!.X = e.X - puzzle.SELECTED_PIECE.OffsetX;
                 puzzle.SELECTED_PIECE.Y = e.Y - puzzle.SELECTED_PIECE.OffsetY;
 
-                movePieces(puzzle.SELECTED_PIECE, new List<Piece>());
+               movePieces(puzzle.SELECTED_PIECE, new List<Piece>());
 
                 this.Invalidate();
             }
@@ -1017,6 +1037,10 @@ namespace PuzzleWin
             COLOR.SetClip(region, CombineMode.Replace);
             COLOR.FillPath(new SolidBrush(this.color), path);
             COLOR.FillRectangle(new SolidBrush(this.color), (int)(this.X - tabHeight), (int)(this.Y - tabHeight), (int)(this.Width + tabHeight * 2), (int)(this.Height * tabHeight * 2));
+
+            //Release the pens
+            pen.Dispose();
+            blackPen.Dispose();
         }
         public bool close()
         {
