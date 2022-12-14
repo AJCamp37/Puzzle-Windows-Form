@@ -120,8 +120,8 @@ namespace PuzzleWin
         {
 
             Image temp = Image.FromFile(puzzle.FN);
-            puzzle.SIZE.Rows = 10;
-            puzzle.SIZE.Columns = 10;
+            puzzle.SIZE.Rows = 20;
+            puzzle.SIZE.Columns = 20;
             double resizer = puzzle.SCALER * Math.Min((double)this.Width / (double)temp.Width, (double)this.Height / (double)temp.Height);
             if(puzzle.SIZE.Rows % 2 == 0)
                 puzzle.SIZE.Height = resizer * temp.Height;
@@ -319,44 +319,157 @@ namespace PuzzleWin
         }
         private void PuzzleForm_MouseDown(object sender, MouseEventArgs e)
         {
-            //Get pixel color of clicked pixel
-            Color clicked = puzzle.BMP.GetPixel(e.X, e.Y);
-            
-            //if you pixel clicked is transparent there's no piece there so nothing is selected
-            //else select piece
-            if (clicked.A == 0)
-            {
-                puzzle.SELECTED_PIECE = null;
-                puzzle.PIECE_SELECTED = false;
-            }
-            else
-            {
-                //Set selected piece based off it's color in the COLORDIC 
-                puzzle.SELECTED_PIECE = puzzle.COLORDIC[clicked];
-                //If the piece is locked in place already unselect the piece
-                //Else remove the piece(s) from the PIECES array and add it back to the end so the piece(s) will be drawn above all other pieces
-                //Set the offset for the piece
-                if (!puzzle.SELECTED_PIECE.Moveable)
+            //If there's not a piece selected try to select one
+            //Else put the piece down
+            if(puzzle.SELECTED_PIECE == null) 
+            { 
+                //Get pixel color of clicked pixel
+                Color clicked = puzzle.BMP.GetPixel(e.X, e.Y);
+                
+                //if you pixel clicked is transparent there's no piece there so nothing is selected
+                //else select piece
+                if (clicked.A == 0)
                 {
                     puzzle.SELECTED_PIECE = null;
                     puzzle.PIECE_SELECTED = false;
                 }
                 else
                 {
-                    //Hide cursor so the piece lag behind cursor isn't so jarring
-                    Cursor.Hide();
+                    //Set selected piece based off it's color in the COLORDIC 
+                    puzzle.SELECTED_PIECE = puzzle.COLORDIC[clicked];
+                    //If the piece is locked in place already unselect the piece
+                    //Else remove the piece(s) from the PIECES array and add it back to the end so the piece(s) will be drawn above all other pieces
+                    //Set the offset for the piece
+                    if (!puzzle.SELECTED_PIECE.Moveable)
+                    {
+                        puzzle.SELECTED_PIECE = null;
+                        puzzle.PIECE_SELECTED = false;
+                    }
+                    else
+                    {
+                        //Hide cursor so the piece lag behind cursor isn't so jarring
+                        Cursor.Hide();
 
-                    puzzle.PIECE_SELECTED = true;
-                    puzzle.PIECES.Remove(puzzle.SELECTED_PIECE);
-                    puzzle.PIECES.Add(puzzle.SELECTED_PIECE);
-                    removePieces(puzzle.SELECTED_PIECE, new List<Piece>());
-                    puzzle.SELECTED_PIECE.OffsetX = e.X - puzzle.SELECTED_PIECE.X;
-                    puzzle.SELECTED_PIECE.OffsetY = e.Y - puzzle.SELECTED_PIECE.Y;
+                        puzzle.PIECE_SELECTED = true;
+                        puzzle.PIECES.Remove(puzzle.SELECTED_PIECE);
+                        puzzle.PIECES.Add(puzzle.SELECTED_PIECE);
+                        removePieces(puzzle.SELECTED_PIECE, new List<Piece>());
+                        puzzle.SELECTED_PIECE.OffsetX = e.X - puzzle.SELECTED_PIECE.X;
+                        puzzle.SELECTED_PIECE.OffsetY = e.Y - puzzle.SELECTED_PIECE.Y;
+                    }
                 }
+
+            }
+            else
+            {
+                 //Show the cursor again
+                Cursor.Show();
+                //If there's a piece selected check if the piece should be snapped in place on the board 
+                //Else if there's a piece selected check around the piece to see if any of it's sides should be snapped to another piece
+                if (puzzle.SELECTED_PIECE != null && puzzle.SELECTED_PIECE.close())
+                {
+                    puzzle.SELECTED_PIECE.snap(puzzle.PIECES, puzzle.COMPLETED_PIECES);
+                    this.Invalidate();
+                    if (isComplete())
+                    {
+                        this.Invalidate();
+                        puzzle.SW.Stop();
+                        label1.Text = "YOU WON!";
+                        label1.Visible = true;
+                        string eT = String.Format("{0:00}:{1:00}:{2:00}", puzzle.SW.Elapsed.Hours, puzzle.SW.Elapsed.Minutes, puzzle.SW.Elapsed.Seconds);
+                        label2.Text = "Your time is: " + eT;
+                        label2.Visible = true;
+                    }
+                }
+                else if(puzzle.SELECTED_PIECE != null)
+                {
+                    if(puzzle.SELECTED_PIECE.LeftCheck.X >= 0 && puzzle.SELECTED_PIECE.LeftCheck.X <= this.Width && puzzle.SELECTED_PIECE.LeftCheck.Y >= 0 && puzzle.SELECTED_PIECE.LeftCheck.Y <= this.Height)
+                    {
+                        Color tryLeft = puzzle.BMP.GetPixel(puzzle.SELECTED_PIECE.LeftCheck.X-1, puzzle.SELECTED_PIECE.LeftCheck.Y);
+                        
+                        if(tryLeft.A != 0)
+                        {
+                            Piece selectedLeft = puzzle.COLORDIC[tryLeft];
+                            if(selectedLeft != puzzle.SELECTED_PIECE.leftPiece)
+                            {
+                                if(puzzle.SELECTED_PIECE.closePiece(selectedLeft, 'L', puzzle.COLORDIC))
+                                {
+                                    puzzle.SELECTED_PIECE = null;
+                                    puzzle.PIECE_SELECTED = false;
+                                    this.Invalidate();
+                                    return;
+                                }
+                            }
+                        }
+        
+                    }
+                    if(puzzle.SELECTED_PIECE.RightCheck.X >= 0 && puzzle.SELECTED_PIECE.RightCheck.X <= this.Width && puzzle.SELECTED_PIECE.RightCheck.Y >= 0 && puzzle.SELECTED_PIECE.RightCheck.Y <= this.Height)
+                    {
+                        Color tryRight = puzzle.BMP.GetPixel(puzzle.SELECTED_PIECE.RightCheck.X+1, puzzle.SELECTED_PIECE.RightCheck.Y);
+
+                        if(tryRight.A != 0)
+                        {
+                            Piece selectedRight = puzzle.COLORDIC[tryRight];
+                            if(selectedRight != puzzle.SELECTED_PIECE.rightPiece)
+                            {
+                                if(puzzle.SELECTED_PIECE.closePiece(selectedRight, 'R', puzzle.COLORDIC)){
+                                    puzzle.SELECTED_PIECE = null;
+                                    puzzle.PIECE_SELECTED = false;
+                                    this.Invalidate();
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    if(puzzle.SELECTED_PIECE.TopCheck.X >= 0 && puzzle.SELECTED_PIECE.TopCheck.X <= this.Width && puzzle.SELECTED_PIECE.TopCheck.Y >= 0 && puzzle.SELECTED_PIECE.TopCheck.Y <= this.Height)
+                    {
+                        Color tryTop = puzzle.BMP.GetPixel(puzzle.SELECTED_PIECE.TopCheck.X, puzzle.SELECTED_PIECE.TopCheck.Y-1);
+
+                        if(tryTop.A != 0)
+                        {
+                            Piece selectedTop = puzzle.COLORDIC[tryTop];
+                            if(selectedTop != puzzle.SELECTED_PIECE.topPiece)
+                            {
+                                if(puzzle.SELECTED_PIECE.closePiece(selectedTop, 'T', puzzle.COLORDIC))
+                                {
+                                    puzzle.SELECTED_PIECE = null;
+                                    puzzle.PIECE_SELECTED = false;
+                                    this.Invalidate();
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    if(puzzle.SELECTED_PIECE.BottomCheck.X >= 0 && puzzle.SELECTED_PIECE.BottomCheck.X <= this.Width && puzzle.SELECTED_PIECE.BottomCheck.Y >= 0 && puzzle.SELECTED_PIECE.BottomCheck.Y <= this.Height)
+                    {
+                        Color tryBottom = puzzle.BMP.GetPixel(puzzle.SELECTED_PIECE.BottomCheck.X, puzzle.SELECTED_PIECE.BottomCheck.Y+1);
+
+                        if(tryBottom.A != 0)
+                        {
+                            Piece selectedBottom = puzzle.COLORDIC[tryBottom];
+                            if(selectedBottom != puzzle.SELECTED_PIECE.bottomPiece)
+                            {
+                                if(puzzle.SELECTED_PIECE.closePiece(selectedBottom, 'B', puzzle.COLORDIC))
+                                {
+                                    puzzle.SELECTED_PIECE = null;
+                                    puzzle.PIECE_SELECTED = false;
+                                    this.Invalidate();
+                                    return;
+                                }
+                            }
+                        }
+                    }
+               }
+
+                //Unselect puzzle piece
+                puzzle.SELECTED_PIECE = null;
+                puzzle.PIECE_SELECTED = false;
+
             }
             //Redraw canvas
             this.Invalidate();
         }
+        /*
         private void PuzzleForm_MouseUp(object sender, MouseEventArgs e)
         {
             //Show the cursor again
@@ -462,6 +575,7 @@ namespace PuzzleWin
             puzzle.SELECTED_PIECE = null;
             puzzle.PIECE_SELECTED = false;
         }
+        */
         private void PuzzleForm_MouseMove(object sender, MouseEventArgs e)
         {
             if(puzzle.PIECE_SELECTED)

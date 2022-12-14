@@ -125,7 +125,7 @@
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.PuzzleForm_Paint);
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PuzzleForm_MouseDown);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PuzzleForm_MouseMove);
-            this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.PuzzleForm_MouseUp);
+            //this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.PuzzleForm_MouseUp);
             this.contextMenuStrip.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
